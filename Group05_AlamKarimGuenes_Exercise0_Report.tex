@@ -1,0 +1,82 @@
+\documentclass[10pt,letterpaper]{article}
+\input{config/config.tex}
+\makeglossaries
+
+\usepackage{paracol}
+
+\begin{document}
+
+\setcounter{page}{1}
+\pagestyle{fancy}
+\setlength{\headheight}{15pt}
+\fancyhead[L]{ML Exercise 0}
+\fancyhead[R]{12229237, 12512103, 01608730}  
+
+\newpage    
+
+\begin{center}
+    \section*{\LARGE Machine Learning Exercise 0\\Dataset Description
+}
+\end{center}
+
+\section{Accidents\_Prediction\_Balanced\_v3 \cite{openml:47052}}
+
+%\pagestyle{plain}
+
+The Accidents\_Prediction\_Balanced\_v3 dataset was selected because it represents a real-world accident prediction problem. We chose it as the small dataset because it contains a limited number of instances with no missing values which makes it suitable for exploring pre-processing steps such as feature encoding and scaling. It has relevant operational and environmental features with the target variable 'Accident' to identify whether an accident occurred. Its small size also makes it easy to understand the data and evaluate model performance efficiently. \n
+
+This dataset has 500 samples and 7 attributes including the target variable \textbf{Accident}. It is a clean dataset with no missing values. The attributes consist of numeric (ratio) variables such as \textbf{Production\_Tons} and \textbf{Maintenance\_Hours}, and categorical (nominal) variables such as \textbf{Shift}, \textbf{Equipment}, \textbf{Weather} and \textbf{Operator\_Experience}. The target variable \textbf{Accident} helps to analyze what factors can cause accidents.
+    
+% comment = strg+shift+7
+\begin{wrapfigure}{r}{0.5\textwidth} % r = rechts, l = links
+  \centering
+  %\vspace{-\baselineskip} % optional – schiebt Bild etwas hoch
+  \includegraphics[scale=0.45]{img/boxplots_accident.png}
+    \caption{boxplots for Accident dataset}
+     \label{fig:bp_membership}
+\end{wrapfigure}
+Most attributes in this dataset are categorical with nominal values. However, there is one ordinal attribute, \textbf{PAYMENT\_MODE}, which indicates an ordered payment interval (e.g. annual, quarterly etc.). The missing values in the numeric attributes will have to be handled during pre-processing. In addition, the boxplots for two numeric variables (Fig. \ref{fig:bp_membership}) indicate that the numeric features are on different value ranges. Therefore, scaling will likely also be required as part of the pre-processing step. The categorical features display relatively balanced (except target) distributions across their categories (Fig. \ref{fig:categorical_accident}), which is beneficial for model training.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.80\textwidth]{img/acc_dist.png}
+  \caption{Categorical feature distributions for the Accidents dataset.}
+  \label{fig:categorical_accident}
+\end{figure}
+
+\newpage
+
+\section{MembershipWoes \cite{openml:44224}}
+
+The MembershipWoes dataset contains real customer and membership records from a premium club. It was chosen as the large dataset because it includes a high number of instances and features, with some missing values.  This dataset provides a more complex data which make it suitable for exploring pre-processing techniques such as feature engineering, handling missing values and class imbalance. The dataset includes customer and membership-related features, with the target variable \textbf{MEMBERSHIP\_STATUS} to identify membership status which helps to take proactive steps to retain the members who may cancel their memberships.
+
+The MembershipWoes dataset contains 10,362 samples and 15 attributes including the target variable \textbf{MEMBERSHIP\_STATUS}. It has 12,224 missing values which makes it useful for applying data cleaning and imputation techniques. The dataset has 4 types of features which are
+ratio (numeric) (\textbf{Membership\_Term\_Years}, \textbf{Annual\_Fees}, \textbf{Member\_Annual\_Income}, \textbf{Member\_Age\_at\_Issue}, and \textbf{Additional\_Members})
+nominal (categorical) (\textbf{Membership\_Number}, \textbf{Member\_Marital\_Status}, \textbf{Member\_Gender},  \textbf{Membership\_Package}, \textbf{Member\_Occupation\_CD} and \textbf{Agent\_Code}), 
+ordinal (categorical) ( \textbf{Payment\_Mode} )
+and interval (numeric) features (\textbf{Start\_Date} and \textbf{End\_Date}).
+The target variable \textbf{MEMBERSHIP\_STATUS} checks the status of membership and it helps to take necessary steps to keep members who may cancel their memberships.
+
+\begin{wrapfigure}{r}{0.48\textwidth}
+  \centering
+  \vspace{-0.4cm}
+  \includegraphics[scale=0.38]{img/mem_age.png}
+  \caption{Age distribution of members}
+  \label{fig:age_membership}
+\end{wrapfigure}
+
+The different range of some numercial attributes suggest that the features are on different scales, so applying scaling during pre-processing will likely be necessary. As illustrated in Figure \ref{fig:age_membership}, the age distribution is approximately normal, but there are implausible cases with members younger than 18; hence, a plausibility check is warranted.
+
+The dataset includes many categorical attributes (Fig. \ref{fig:categorical_membership}), most of them nominal and one ordinal. An example of a nominal attribute is \textbf{Shift} with the values \{Day, Night\}. In contrast, the attribute \textbf{Operator\_Experience} with the values \{Novice, Intermediate, Experienced\} is ordinal, since these values imply a meaningful ranking.
+
+\vspace{0.2cm}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{img/mem_dist.png}
+  \caption{Categorical feature distributions}
+  \label{fig:categorical_membership}
+\end{figure}
+
+\newpage
+\printbibliography
+\end{document}
