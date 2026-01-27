@@ -1,0 +1,821 @@
+\documentclass[10pt,letterpaper]{article}
+\input{config/config.tex}
+\makeglossaries
+
+\usepackage{paracol}
+
+\begin{document}
+\setcounter{page}{1}
+\pagestyle{fancy}
+\setlength{\headheight}{15pt}
+\fancyhead[L]{ML Exercise 1}
+\fancyhead[R]{Group 05: 12229237, 12512103, 01608730}  
+
+\newpage    
+
+\begin{center}
+    \section*{\LARGE Machine Learning Exercise 1\\Classification
+}
+\end{center}
+
+%\input{info_datasets}
+
+\section{Datasets}
+
+\subsection{Accident Dataset}
+
+This dataset has been described in Exercise 0. Please refer to the description there.
+
+\subsection{Breast Cancer Dataset}
+
+The Breast Cancer dataset contains real-valued features computed from digitized images of fine needle aspirates of breast masses. It is a medium-sized dataset with 569 samples and 32  with no missing values which makes it easy to get started with but later 30 feature columns are still complex. 
+It describe characteristics of the cell nuclei present in the image, such as radius, texture, perimeter, and smoothness which recorded as mean, standard error, and worst values. The purpose is to classify the stage of the tumor.
+
+\subsection{Hotel Reservations Dataset}
+
+The Hotel Reservations dataset contains 36,000 records and 19 different attributes, offering a mix of numerical features (like lead\_time and avg\_price\_per\_room) and categorical ones (such as market\_segment\_type and meal\_plan). There are no missing values, which make ready for analysis. The target variable, booking\_status, is indicating binary that a reservation was Canceled or Not\_Canceled. This dataset ideal for building models to predict customer cancellations improve revenue management strategies.
+
+\subsection{Loan Dataset}
+The Loan dataset is a multi-class classification problem in the financial domain which contains 10,000 instances and 92 features. It has both numerical data(like loan\_amnt, int\_rate, annual\_inc) and categorical data(such as home\_ownership and purpose). Due to its complexity it require missing value handling, encoding for categorical variables, and class imbalance in the target variable Loan Grade.
+
+\subsection{Dataset Change}
+We made the decision to replace our originally selected dataset ``membershipwhoes'' during the preprocessing phase. Upon closer examination, we found that the most important columns exhibited highly arbitrary patterns, which raised concerns about data quality and reliability. Consequently, we were not satisfied with this dataset and chose to work with a different one instead.
+
+\section{Experimental Setup}
+
+\subsection{Environment and Libraries}
+
+We used Python for the implementation as the main development tool. For implementing the algorithms, we used libraries from the sklearn framework, whereas for data manipulation, we used numpy and pandas. For the visualization, matplotlib has been the main tool.
+
+\subsection{Preprocessing}
+
+We applied various preprocessing methods across all four datasets. One-hot encoding was implemented for all categorical variables in each dataset. The only exception was the target variable `grade' in the loan dataset, where we applied label encoding. For columns with more than three categories, we deliberately avoided label encoding due to data imbalance concerns and the potential for introducing bias.
+
+\subsubsection{Feature Analysis and Transformation}
+
+We conducted a thorough correlation analysis across all datasets. The breast cancer and loan datasets, in particular, exhibited several highly correlated features. To address outliers, we applied a $\log(x+1)$ transformation. In cases where outliers persisted after this transformation, we implemented clipping at the 5th and 95th percentiles. This additional step was necessary for both the hotel and loan datasets.
+
+During our analysis of the loan dataset, we identified several columns that appeared to have minimal influence based on boxplot visualizations or contained significant outliers. Given the large number of features in this dataset, we decided to remove all columns with a median value of 0 to reduce dimensionality.
+
+\subsubsection{Dataset Versions}
+
+To evaluate the performance of different preprocessing approaches, we created multiple versions of certain datasets:
+
+\subsubsection{Breast Cancer Dataset}
+\begin{itemize}
+    \item \textbf{Version 1:} Target variable encoded only
+    \item \textbf{Version 2:} Target encoded with correlated columns removed
+    \item \textbf{Version 3:} Target encoded
+    \item \textbf{Version 4:} All preprocessing steps from previous versions combined
+\end{itemize}
+
+\subsubsection{Loan Dataset}
+\begin{itemize}
+    \item \textbf{Version 1:} All categorical columns one-hot encoded; \texttt{emp\_mapping} label encoded (with special handling: $<1$ year = 0.5, $10+$ years = 11); columns with median = 0 removed
+    \item \textbf{Version 2:} All categorical columns one-hot encoded; \texttt{emp\_mapping} label encoded (same special handling); highly correlated columns removed (correlation threshold $< 0.8$)
+    \item \textbf{Version 3:} All categorical columns one-hot encoded; \texttt{emp\_mapping} label encoded (same special handling); values clipped at 5th and 95th percentiles; $\log(1+x)$ transformation applied
+    \item \textbf{Version 4:} All preprocessing steps from all previous versions combined
+\end{itemize}
+
+\subsubsection{Hotel Dataset}
+\begin{itemize}
+    \item \textbf{Version 1:} All variables one-hot encoded
+    \item \textbf{Version 2:} All variables one-hot encoded; \texttt{lead\_time} column $\log(x+1)$ transformed; \texttt{avg\_price\_per\_room} clipped at 5th and 95th percentiles
+\end{itemize}
+
+\subsubsection{Accident Dataset}
+Only one version created with features one-hot encoded.
+
+\subsection{Train-Test Split and Scaling}
+
+Before modeling, we performed a stratified train-test split to ensure a balanced representation of the target variable across both sets. Then, standard scaling was applied to normalize the feature distributions. It is worth noting that ID columns in the loan and breast cancer datasets were retained during preprocessing due to Kaggle competition requirements but were naturally excluded during the modeling phase.
+
+\subsection{K Nearest Neighbors}
+
+Since this classifier is one of the most widely known and used classifiers, we decided to use the k-NN classifier. It has no training step, but computes the class prediction at runtime (= Lazy Learner). The hyperparameter, which we consider here, is k. After trying different values for the distance function, we saw that this hyperparameter did not have an important impact on the results.
+
+The k-NN classifier is easy to understand and interpret, but it is very sensitive to noise. However, larger values of k reduce the effect of noise. 
+
+The maximum value for k can be n, the number of samples. However, the optimal value varies a lot with the data.
+
+A drawback of this classifier is that in case there are many features, its performance can fall drastically. Additionally, in case of many items to classify, this algorithm becomes computationally expensive.
+
+\subsection{Logistic Regression}
+Logistic Regression is a fundamental and widely used linear model for classification. We decided to use it as a robust and interpretable baseline classifier. Unlike k-NN, it is an "eager learner" that learns a set of weights for the input features during a training step. Its primary advantage is high interpretability, as the coefficients directly show each feature's importance and it is very fast to train. 
+
+We tried different values for this hyperparameter to find the best balance between model complexity and performance on the training data.
+
+Altough it is very fast to train and predict but a drawback is its core assumption that the data is linearly separable, which means it may underperform if the true decision boundary is complex and non-linear.
+
+For performance evaluation, we recorded both fit time and score time during cross-validation to better understand how efficiently the model processes the data. For the holdout method, we did not measure these times directly, as they can be approximated using the average fit and score times obtained from cross-validation.
+
+\subsection{Random Forest}
+We also chose the Random Forest classifier which is a powerful ensemble method known for its high accuracy and robustness. It is necessary for handling the likely complex, non-linear interactions and mixed feature. It operates by constructing many decision trees during training with the final prediction determined by  majority. This approach effectively reduces the overfitting tendency common to single decision trees. 
+
+The main advantage of it is the ability to model complex, non-linear relationships without requiring extensive feature scaling, and it is generally robust to noise. The primary drawbacks are a significant loss of interpretability (it's a "black box" model) and it has potential of high computational cost and memory usage.
+
+The key hyperparameters we consider are n\_estimators (the number of trees in the forest) and max\_depth (the maximum depth for each tree), which we tuned to optimize performance.
+
+\section{Evaluation Methodology}
+
+\subsection{Performance Measures}
+
+For each classifier, we use the same performance measures so that we can compare them. The used measures are described below.
+
+% \begin{itemize}
+%     \item Balanced Accuracy
+%     \item F1 Score
+%     \item ROC-AUC: Measures how well model distinguishes between classes. 
+%     \item Fit time
+%     \item Score time
+% \end{itemize}
+
+\textbf{Accuracy} is most commonly used, because it measures the overall percentage of correct predictions. We use the \textbf{balanced} version, because it gives equal importance to each class, making it fairer for imbalanced datasets.
+
+The \textbf{F1 score} combines Precision and Recall to provide a balanced metric between FP (False Positive) and FN (False Negative) prediction. We used the \textbf{macro} F1 score, which treats all classes equally, For this reason, less populated classes have the same influence on the performance as more populated ones.
+
+We also use \textbf{fit time} and \textbf{score time} when evaluating the cross-validation method, to see how the algorithm works on the data. We did not directly measure the fit and score time for the holdout method, because it can be estimated by the mean fit and score time of the cross-validation method.
+
+The \textbf{ROC-AUC} metric measures how well a model is able to distinguish between classes. We chose it because it is robust to class imbalance, providing a more comprehensive view than simple accuracy. 
+
+\subsection{Holdout vs. Cross-Validation}
+
+After having completed the pre-processing of the datasets, we continue with the holdout and cross validation methods for applying the classifiers. Since we have to perform scaling based on training data, this part of data processing is also done in the holdout / cross validation step.
+
+For the holdout method, we used a 70 - 30 \% split. The reason for this rather uncommon split was that we also have small datasets, for which we then would have too little test data to obtain meaningful evaluation scores.
+
+For cross-validation, we decided to do a 5-fold stratified cross-validation. We applied 5 folds due to the small number of observations in some of the datasets. The stratification ensures that each fold has the original class distribution. Unless otherwise mentioned, when talking about scores for cross-validation, the mean values are considered.
+
+\section{Results}
+
+% TODO: modify table formats to one common format
+
+For all datasets, we had to do scaling in order to have an equal impact of each feature. In most cases, we also had to one-hot encode categorical features. Hence, the number of features for some datasets exploded due to their large number of categorical features. For some datasets, we used different preprocessing techniques, which are indicated by different versions. In general the different techniques did not make huge differences. For every dataset and classifier, we will show a table comparing the holdout version with the first version of the method with the most stable performance ( = the configuration where the train and test balanced accuracy scores are the nearest).
+
+\subsection{Accident Dataset}
+
+\subsubsection{k-NN Classifier}
+
+Table \ref{tab:comp_acc_knn} compares the results for the two evaluation methods: holdout and cross-validation, with the best configuration of hyperparameters regarding balanced accuracy. We can see that both have quite similar results. Since this dataset has a low number of observations, the low performance in terms of balanced accuracy makes sense. As we expected, the fit time is near zero, whereas the score time is also very low. 
+ 
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & \textbf{50.00} & \textbf{46.62} & \textbf{63.30} \\ \hline
+\textbf{Cross-Validation} & 0.00 & 0.02 & \textbf{50.00} & 46.64 & 52.85 \\ 
+\hline
+\end{tabular}
+}
+\caption{Holdout Split (k = 10) vs Cross Validation for KNN (k = 10, Uniform weights)}
+\label{tab:comp_acc_knn}
+\end{table}
+
+The following table displays the test results for different numbers of neighbors used for cross-validated prediction. It shows that with k = 1, we get the best results. Here, only the uniformly weighted versions are considered. 
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{k} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{1} & \textbf{50.23} & \textbf{50.08} & 50.23 & 0.02 & \textbf{0.02} \\ \hline
+\textbf{2} & 49.31 & 46.29 & 53.08 & \textbf{0.01} & \textbf{0.02} \\ \hline
+\textbf{3} & 49.35 & 47.27 & 51.86 & \textbf{0.01} & \textbf{0.02} \\ \hline
+\textbf{5} & 49.08 & 46.18 & 49.93 & \textbf{0.01} & \textbf{0.02} \\ \hline
+\textbf{7} & 49.54 & 46.41 & 51.66 & \textbf{0.01} & \textbf{0.02} \\ \hline
+\textbf{10} & 50.00 & 46.64 & 54.25 & \textbf{0.01} & \textbf{0.02} \\ \hline
+\textbf{20} & 50.00 & 46.64 & \textbf{56.01} & \textbf{0.01} & \textbf{0.02} \\ \hline
+\end{tabular}
+\caption{Uniformly weighted, cross-validated KNN Results for Accident Dataset}
+\label{tab:knn_uniform_acc}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{img/plot_accident.png}
+\caption{Balanced Accuracy comparison for Accident Dataset}
+\label{fig:knn_plot_acc}
+\end{figure}
+
+For comparison of different hyperparameter settings, Figure \ref{fig:knn_plot_acc} shows the balanced accuracy results. We can see that the values occur in a very small range. However, the distance weighted Holdout method outperforms in most cases.
+
+% \begin{table}[H]
+% \centering
+% \begin{tabular}{|c|l|c|l|c|l|}
+% \hline
+% \textbf{k} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+% \textbf{1} &  &  &  &  &  \\ \hline
+% \textbf{2} &  &  &  &  &  \\ \hline
+% \textbf{3} &  &  &  &  &  \\ \hline
+% \textbf{5} &  &  &  &  &  \\ \hline
+% \textbf{7} &  &  &  &  &  \\ \hline
+% \textbf{10} &  &  &  &  &  \\ \hline
+% \textbf{20} &  &  &  &  &  \\ \hline
+% \end{tabular}
+% \caption{EXAMPLE CAPTION}
+% \label{tab:my-table}
+% \end{table}
+
+\subsubsection{Logistic Regression Classifier}
+
+In Table \ref{tab:accident_best}, we initially fit our dataset to logistic regression for the most stable model and compare the results from 5-fold cross validation and holdout.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & 50.00 & 46.62 & 67.12 \\ \hline
+\textbf{Cross-Validation} & 0.00 & 0.00 & 50.00 & 46.64 & 60.16 \\ \hline
+\end{tabular}
+}
+\caption{5-fold Cross Validation vs Holdout - Most stable Model (penalty=l1)}
+\label{tab:accident_best}
+\end{table}
+
+We examine the penalty hyperparameters in detail, comparing Ridge, Lasso, and Elastic Net (\texttt{l1\_ratio = 0.5}). The results are shown in Table \ref{tab:accident_penalty_comparison}. We observe that Ridge achieves the best performance and also requires the fewest iterations to converge. The fit time is identical across all penalties.
+
+We additionally investigated the regularization strength parameter $C$ for values of 0.1, 1 and 10. The results were nearly identical across all settings, so we retained the default value.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Penalty} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Iterations} \\
+\hline
+\textbf{elasticnet} & 0.00 & 0.01 & 50.00 & 46.64 & 62.95 & 24 \\ \hline
+\textbf{l1} & 0.01 & 0.01 & 50.00 & 46.64 & 61.96 & 24 \\ \hline
+\textbf{l2} & 0.01 & 0.01 & 50.00 & 46.64 & 63.53 & 16 \\ \hline
+\textbf{None} & 0.00 & 0.01 & 50.00 & 46.64 & 62.97 & 29 \\ \hline
+\end{tabular}
+}
+\caption{Penalty Comparison (CV Test Metrics)}
+\label{tab:accident_penalty_comparison}
+\end{table}
+
+
+Solvers are optimization algorithms used to minimize prediction errors in regression models. We evaluated several solvers compatible with Ridge penalty, and the results are presented in Figure \ref{fig:acc_solver}. Our analysis reveals that certain solvers demonstrate faster convergence than others, particularly lbfgs, Newton-CG, and Newton-Cholesky. Among these, Newton-CG exhibits the fastest computation time while achieving convergence rates comparable to Newton-Cholesky. Based on these findings, we selected Newton-CG as the optimal solver for our implementation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{img/acc_solver_performance.png}
+\caption{Solver comparison with Balanced Accuracy for Accident Dataset}
+\label{fig:acc_solver}
+\end{figure}
+
+
+\subsubsection{Random Forest Classifier}
+Table \ref{tab:comp_acc_rf} compares the holdout and cross-validation results for the Random Forest classifier. We can see that both methods perform identically, with a balanced accuracy of 50.00\%. This indicates the model is no better than random guessing for this dataset. As expected for an ensemble method, the fit time is noticeably higher than for k-NN or Logistic Regression.
+
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & \textbf{50.00} & \textbf{46.62} & \textbf{59.30} \\ \hline
+\textbf{Cross-Validation} & 0.25 & 0.03 & 50.00 & 46.64 & 55.17 \\
+\hline
+\end{tabular}
+}
+\caption{Holdout Split vs Cross Validation for Random Forest (n\_estimators = 100, max depth = 5)}
+\label{tab:comp_acc_rf}
+\end{table}
+
+
+The following Table \ref{tab:rf_grid_acc_v1} displays the testing results for different hyperparameter configurations from the 5-fold cross-validation. It shows that max\_depth = 5 consistently results in the worst performance (50.00\%). The best configuration is max\_depth = 10 with n\_estimators = 400, which achieves a balanced accuracy of 50.62\%.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{n\_estimators} & \textbf{max\_depth} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{100} & None & 50.39 & 48.67 & 51.17 & 0.32 & 0.03 \\ \hline
+\textbf{200} & None & 50.28 & 48.61 & 51.47 & 0.74 & 0.06 \\ \hline
+\textbf{400} & None & 50.51 & 48.82 & 52.27 & 1.59 & 0.13 \\ \hline
+\textbf{600} & None & 50.39 & 48.76 & 52.42 & 2.26 & 0.18 \\ \hline
+\textbf{100} & 5 & 50.00 & 46.64 & 55.17 & 0.25 & 0.03 \\ \hline
+\textbf{200} & 5 & 50.00 & 46.64 & 55.63 & 0.49 & 0.05 \\ \hline
+\textbf{400} & 5 & 50.00 & 46.64 & 56.38 & 1.25 & 0.09 \\ \hline
+\textbf{600} & 5 & 50.00 & 46.64 & 56.05 & 1.72 & 0.12 \\ \hline
+\textbf{100} & 10 & 50.28 & 48.53 & 50.86 & 0.28 & 0.02 \\ \hline
+\textbf{200} & 10 & 50.51 & 48.82 & 51.42 & 0.55 & 0.08 \\ \hline
+\textbf{400} & 10 & 50.62 & 48.88 & 51.59 & 1.36 & 0.10 \\ \hline
+\textbf{600} & 10 & 50.62 & 48.88 & 51.73 & 1.55 & 0.10 \\ \hline
+\end{tabular}
+}
+\caption{Random Forest 5-Fold CV Grid Search Accident Dataset}
+\label{tab:rf_grid_acc_v1}
+\end{table}
+
+
+For a visual comparison, Figure \ref{fig:rf_accident_hyperparams} shows the balanced accuracy results. We can see that max\_depth = 5 (green line) provides no improvement. The max\_depth = 10 (orange line) configuration generally outperforms the max\_depth = None (blue line) setting, peaking at 400 estimators.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/rf_accident_hyperparams.png}
+    \caption{Random Forest hyperparameter tuning for the Accident dataset, showing Test Balanced Accuracy vs. $n\_estimators$ for different $max\_depth$ values.}
+    \label{fig:rf_accident_hyperparams}
+\end{figure}
+
+\subsection{Breast Cancer Dataset}
+
+\subsubsection{k-NN Classifier}
+
+When looking at the results for the 4 versions, we see that they all lead to similar results with this classifier. Since version 4 is the simplest one, we will use this version for comparison. 
+
+Table \ref{tab:comp_bc_knn} shows that the Holdout method outperforms the Cross-Validation method. However, both methods achieve very good results.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & \textbf{95.45} & \textbf{96.24} & 98.14 \\ \hline
+\textbf{Cross-Validation} & 0.00 & 0.03 & 93.16 & 93.89 & \textbf{98.75} \\
+\hline
+\end{tabular}
+}
+\caption{Holdout Split (k=2) vs Cross Validation for KNN (k=10, Uniform weights)}
+\label{tab:comp_bc_knn}
+\end{table}
+
+Table \ref{tab:knn_uniform_bc} displays the test results with different hyperparameter configurations (uniformly weighted and cross-validated). In general, we can say that all configurations perform well, with the configuration k = 7 performing best. 
+
+% script in python!
+% Script in Python for generating tables in latex!
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{k} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{1} & 92.83 & 92.88 & 92.83 & \textbf{0.00} & 0.03 \\ \hline
+\textbf{2} & 92.96 & 93.84 & 96.12 & \textbf{0.00} & \textbf{0.02} \\ \hline
+\textbf{3} & 93.79 & 94.27 & 96.94 & \textbf{0.00} & \textbf{0.02} \\ \hline
+\textbf{5} & 93.34 & 93.92 & 98.19 & \textbf{0.00} & \textbf{0.02} \\ \hline
+\textbf{7} & \textbf{94.72} & \textbf{95.08} & 98.81 & \textbf{0.00} & \textbf{0.02} \\ \hline
+\textbf{10} & 93.16 & 93.89 & 98.75 & \textbf{0.00} & 0.03 \\ \hline
+\textbf{20} & 92.51 & 93.37 & \textbf{99.39} & \textbf{0.00} & 0.03 \\ \hline
+\end{tabular}
+\caption{Uniformly weighted, cross-validated KNN Results for Breast Cancer Dataset}
+\label{tab:knn_uniform_bc}
+\end{table}
+
+When we look at Figure \ref{fig:knn_plot_bc}, we see that the distance-weighted configurations achieve better results in most cases. We also see that again the Holdout method is outperforming the Cross-Validation method, especially when k = 10.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{img/plot_bc.png}
+\caption{Balanced Accuracy comparison for Breast Cancer Dataset}
+\label{fig:knn_plot_bc}
+\end{figure}
+
+\subsubsection{Logistic Regression Classifier}
+
+In this experiment, V3 and V4 demonstrated very similar performance. Since V4 is simpler and ensures better comparability with the other classifiers, we proceed with V4 in the subsequent analysis. Table \ref{tab:bc_best} presents the most stable model.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & 97.73 & 98.13 & 97.79 \\ \hline
+\textbf{Cross-Validation} & 0.03 & 0.01 & 97.32 & 97.38 & 99.38 \\ \hline
+\end{tabular}
+}
+\caption{5-fold Cross Validation vs Holdout - Most stable Model (penalty=l1)}
+\label{tab:bc_best}
+\end{table}
+
+Table \ref{tab:bc_penalty_comparison} provides a more detailed examination of the penalty types. We observe that Lasso achieved the best overall performance. The fit time is comparable across all four penalties; however, Lasso requires more iterations to converge than Ridge and Elastic Net. We also evaluated different values of the regularization parameter C, but since the results were either similar or worse than the default setting, we retained the default value.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Penalty} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Iterations} \\
+\hline
+\textbf{elasticnet} & 0.01 & 0.01 & 96.76 & 96.67 & 99.27 & 418 \\ \hline
+\textbf{l1} & 0.03 & 0.01 & 97.32 & 97.38 & 99.38 & 1329 \\ \hline
+\textbf{l2} & 0.01 & 0.01 & 97.04 & 97.02 & 99.24 & 13 \\ \hline
+\textbf{None} & 0.09 & 0.01 & 96.18 & 95.93 & 98.29 & 4056 \\ \hline
+\end{tabular}
+}
+\caption{Breast Cancer Dataset V4 - Penalty Comparison (CV Test Metrics)}
+\label{tab:bc_penalty_comparison}
+\end{table}
+
+Figure \ref{fig:bc_solver} shows the solvers compatible with Lasso, namely liblinear and saga. There is a substantial difference in convergence behavior: saga requires significantly more iterations to converge, while the fit time remains similar. The test accuracy differs only marginally between the two solvers (train–test difference: liblinear: 0.022, saga: 0.027). Based on these observations, we select liblinear as the preferred solver.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{img/bc_solver_performance.png}
+\caption{Solver comparison with Balanced Accuracy for Breast Cancer Dataset}
+\label{fig:bc_solver}
+\end{figure}
+
+\subsubsection{Random Forest Classifier}
+Table \ref{tab:comp_acc_rf_400} compares the holdout and cross-validation results for the Random Forest classifier ($n\_estimators=400, max\_depth=5$). We observe that the Holdout method outperforms the Cross-Validation approach, achieving a higher balanced accuracy of 98.11\% compared to 93.02\%. However, both methods demonstrate excellent predictive capability, with ROC-AUC scores exceeding 99\%.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & \textbf{98.11} & \textbf{97.57} & \textbf{99.94} \\ \hline
+\textbf{Cross-Validation} & 4.93 & 0.47 & 93.02 & 92.87 & 99.01 \\
+\hline
+\end{tabular}
+}
+\caption{Holdout Split vs Cross Validation for Random Forest (n\_estimators = 400, max depth = 5)}
+\label{tab:comp_acc_rf_400}
+\end{table}
+
+Table \ref{tab:rf_grid_bc_v1} displays the 5-fold cross-validation results for the Random Forest grid search. In general, it can be said that all configurations perform very well, with all balanced accuracy scores above 92.5\%. The configuration with n\_estimators = 400 and max\_depth of either None or 10 is the outperforming one, achieving 93.30%.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{n\_estimators} & \textbf{max\_depth} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{100} & None & 92.84 & 92.82 & 98.63 & 1.22 & 0.12 \\ \hline
+\textbf{200} & None & 92.84 & 92.82 & 99.10 & 1.57 & 0.21 \\ \hline
+\textbf{400} & None & 93.30 & 93.24 & 98.97 & 4.25 & 0.36 \\ \hline
+\textbf{600} & None & 92.84 & 92.82 & 98.89 & 6.42 & 0.37 \\ \hline
+\textbf{100} & 5 & 92.56 & 92.47 & 98.65 & 1.04 & 0.11 \\ \hline
+\textbf{200} & 5 & 92.84 & 92.82 & 99.06 & 2.15 & 0.21 \\ \hline
+\textbf{400} & 5 & 93.02 & 92.87 & 99.01 & 4.93 & 0.47 \\ \hline
+\textbf{600} & 5 & 93.02 & 92.87 & 98.93 & 6.96 & 0.43 \\ \hline
+\textbf{100} & 10 & 92.84 & 92.82 & 98.63 & 0.93 & 0.09 \\ \hline
+\textbf{200} & 10 & 92.84 & 92.82 & 99.10 & 2.27 & 0.19 \\ \hline
+\textbf{400} & 10 & 93.30 & 93.24 & 98.97 & 3.92 & 0.26 \\ \hline
+\textbf{600} & 10 & 92.84 & 92.82 & 98.89 & 6.23 & 0.36 \\ \hline
+\end{tabular}
+}
+\caption{Random Forest 5-Fold CV Grid Search - Breast Cancer Dataset}
+\label{tab:rf_grid_bc_v1}
+\end{table}
+
+The hyperparameter tuning for the Breast Cancer (v2) dataset is shown in Figure \ref{fig:rf_bc_hyperparams}. This dataset is classified with very high accuracy. While max\_depth = 10 shows a slight advantage at n\_estimators = 100 (94.94\%) , all three max\_depth settings converge to nearly identical high performance (around 94.46\%) as the number of estimators increases. This indicates that even a relatively simple model (max\_depth = 5) is sufficient to effectively classify this dataset.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/rf_bc_v2_hyperparams.png}
+    \caption{Random Forest hyperparameter tuning for the Breast Cancer (v2) dataset. Performance is shown by $n\_estimators$ and $max\_depth$.}
+    \label{fig:rf_bc_hyperparams}
+\end{figure}
+
+
+
+\subsection{Hotel Reservations Dataset}
+
+\subsubsection{k-NN Classifier}
+
+When looking at the results for the 2 versions, we see that they both lead to similar results. Since version 2 is the simplest one, we will use this version for comparison.
+
+Table \ref{tab:comp_hotel_knn} shows that the Cross-Validation method outperforms the Holdout method. We also see that the score time is relatively high, since this dataset has many observations.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & 77.96 & 78.58 & 88.29 \\ \hline
+\textbf{Cross-Validation} & 0.07 & 0.73 & \textbf{79.12} & \textbf{79.93} & \textbf{89.13} \\
+\hline
+\end{tabular}
+}
+\caption{Holdout Split (k = 20) vs Cross Validation for KNN (k = 20, Uniform weights)}
+\label{tab:comp_hotel_knn}
+\end{table}
+
+Table \ref{tab:knn_uniform_hotel} again summarizes the performance measures for different hyperparameter configurations using uniform weights and Cross-Validation. We see that for k = 1 we get the best results. However, it has the highest score time. In general, each performance is in the range of 80\%, which is not perfect, but not that bad as well.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{k} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{1} & \textbf{82.29} & \textbf{82.13} & 82.29 & 0.09 & 1.02 \\ \hline
+\textbf{2} & 81.17 & 78.65 & 86.02 & \textbf{0.07} & \textbf{0.55} \\ \hline
+\textbf{3} & 81.38 & 81.61 & 87.83 & \textbf{0.07} & 0.60 \\ \hline
+\textbf{5} & 80.85 & 81.29 & 89.11 & 0.10 & 0.88 \\ \hline
+\textbf{7} & 80.49 & 81.03 & 89.41 & 0.10 & 0.94 \\ \hline
+\textbf{10} & 80.87 & 80.80 & \textbf{89.59} & \textbf{0.07} & 0.65 \\ \hline
+\textbf{20} & 79.03 & 79.53 & 88.85 & \textbf{0.07} & 0.73 \\ \hline
+\end{tabular}
+\caption{Uniformly weighted, cross-validated KNN Results for Hotel Reservations Dataset}
+\label{tab:knn_uniform_hotel}
+\end{table}
+
+When looking at Figure \ref{fig:knn_plot_hotel}, we see that in this case the Cross-Validation Method is outperforming the Holdout Method. Again, the distance-weighted configurations perform better than the uniformly weighted ones. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{img/plot_hotel.png}
+\caption{Balanced Accuracy comparison for Hotel Reservations Dataset}
+\label{fig:knn_plot_hotel}
+\end{figure}
+
+\subsubsection{Logistic Regression Classifier}
+
+In this case, we again compare two versions. Although V1 performs slightly better than V2, the difference is small. For the sake of consistency with the other classifiers, we proceed with V2. The optimal model for this dataset is shown in Table \ref{tab:hotel_best}.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & 74.25 & 75.50 & 85.34 \\ \hline
+\textbf{Cross-Validation} & 10.78 & 0.02 & 73.95 & 75.13 & 84.62 \\ \hline
+\end{tabular}
+}
+\caption{5-fold Cross Validation vs Holdout - Most stable Model (solver=saga)}
+\label{tab:hotel_best}
+\end{table}
+
+Table \ref{tab:hotel_penalty_comparison} compares the different penalty types. The results are very similar overall, and all penalties require approximately the same fit time. Since the none penalty achieves the best performance, we select it as the preferred option. In this setting, Ridge converges noticeably later than the other penalties.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Penalty} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Iterations} \\
+\hline
+\textbf{elasticnet} & 15.18 & 0.02 & 73.94 & 75.12 & 84.62 & 2345 \\ \hline
+\textbf{l1} & 15.75 & 0.02 & 73.99 & 75.17 & 84.62 & 2345 \\ \hline
+\textbf{l2} & 7.72 & 0.02 & 74.47 & 75.36 & 85.05 & 6375 \\ \hline
+\textbf{None} & 12.15 & 0.02 & 73.95 & 75.13 & 84.62 & 2346 \\ \hline
+\end{tabular}
+}
+\caption{Hotel Dataset V2 - Penalty Comparison (CV Test Metrics)}
+\label{tab:hotel_penalty_comparison}
+\end{table}
+
+Figure \ref{fig:hotel_solver} shows the solvers available for this configuration. We observe substantial differences in the number of iterations: Newton–CG and Newton–Cholesky converge significantly faster than the other two solvers. Although their fit time is slightly higher than that of saga and lbfgs, the much earlier convergence outweighs this difference. Combined with their slightly better performance, Newton–Cholesky is the preferred solver.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{img/hotel_solver_performance.png}
+\caption{Solver comparison with Balanced Accuracy for Hotel Dataset}
+\label{fig:hotel_solver}
+\end{figure}
+
+
+\subsubsection{Random Forest Classifier}
+Table \ref{tab:comp_acc_rf_600} displays the 5-fold cross-validation results for the Random Forest grid search. In general, it can be said that max\_depth is the most critical parameter, with max\_depth = None models performing well. Shallower models with max\_depth = 5 underperform significantly. The configuration max\_depth = None with n\_estimators = 100 is the outperforming one, achieving 88.24\% balanced accuracy.
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & \textbf{71.79} & \textbf{74.05} & \textbf{88.58} \\ \hline
+\textbf{Cross-Validation} & 11.87 & 0.79 & 70.89 & 73.05 & 88.44 \\
+\hline
+\end{tabular}
+}
+\caption{Holdout Split vs Cross Validation for Random Forest (n\_estimators = 600, max depth = 5)}
+\label{tab:comp_acc_rf_600}
+\end{table}
+Table \ref{tab:rf_grid_hotel_v1} displays the 5-fold cross-validation results for the Random Forest grid search. In general, it can be said that max\_depth is the most critical parameter, with max\_depth = None models performing well. Shallower models with max\_depth = 5 underperform significantly. The configuration max\_depth = None with n\_estimators = 100 is the outperforming one, achieving 88.24\% balanced accuracy.
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{n\_estimators} & \textbf{max\_depth} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{100} & None & 88.24 & 88.96 & 95.63 & 14.95 & 2.47 \\ \hline
+\textbf{200} & None & 88.22 & 88.97 & 95.72 & 37.43 & 3.89 \\ \hline
+\textbf{400} & None & 88.19 & 88.95 & 95.73 & 79.06 & 8.50 \\ \hline
+\textbf{600} & None & 88.20 & 88.95 & 95.74 & 95.92 & 3.84 \\ \hline
+\textbf{100} & 5 & 70.63 & 72.69 & 88.32 & 6.94 & 0.59 \\ \hline
+\textbf{200} & 5 & 70.81 & 72.95 & 88.50 & 3.51 & 0.27 \\ \hline
+\textbf{400} & 5 & 70.65 & 72.75 & 88.41 & 28.20 & 2.42 \\ \hline
+\textbf{600} & 5 & 70.89 & 73.05 & 88.44 & 11.87 & 0.79 \\ \hline
+\textbf{100} & 10 & 83.80 & 85.02 & 92.96 & 8.31 & 0.98 \\ \hline
+\textbf{200} & 10 & 83.86 & 85.09 & 93.01 & 7.12 & 0.76 \\ \hline
+\textbf{400} & 10 & 83.93 & 85.15 & 93.03 & 44.95 & 3.70 \\ \hline
+\textbf{600} & 10 & 83.82 & 85.05 & 93.04 & 20.50 & 1.59 \\ \hline
+\end{tabular}
+}
+\caption{Random Forest 5-Fold CV Grid Search - Hotel Dataset }
+\label{tab:rf_grid_hotel_v1}
+\end{table}
+
+As seen in Figure \ref{fig:rf_hotel_hyperparams}, the max\_depth parameter has a significant and distinct impact on performance for the Hotel dataset. Allowing the trees to grow fully (max2\_depth = None) achieves the best balanced accuracy at approximately 88.2\%. Restricting the depth to 10 or 5 causes significant performance drops, to ~84\% and ~71\%, respectively. In contrast, increasing the number of estimators (n\_estimators) has a negligible effect on performance within each depth setting.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/rf_hotel_v1_hyperparams.png}
+    \caption{Random Forest hyperparameter tuning for the Hotel (v1) dataset. Note the strong influence of $max\_depth$ on model performance.}
+    \label{fig:rf_hotel_hyperparams}
+\end{figure}
+\subsection{Loan Dataset}
+
+\subsubsection{k-NN Classifier}
+
+In this case, version 4 is the one giving the best results. Since it is also the simplest one, we will use this version for comparing the methods.
+
+Here, Table \ref{tab:comp_loan_knn} shows that the cross-validated method is the better performing one. However, both methods achieve poor results. We know that the performance of the k-NN classifier decreases as the number of features increases. Since this dataset has many features, we assume that is the reason for the low values.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & 23.54 & 22.36 & 69.32 \\ \hline
+\textbf{Cross-Validation} & 0.08 & 0.17 & \textbf{23.68} & \textbf{22.69} & \textbf{70.31} \\ 
+\hline
+\end{tabular}
+}
+\caption{Holdout Split (k = 20) vs Cross Validation for KNN (k = 20, Uniform weights)}
+\label{tab:comp_loan_knn}
+\end{table}
+
+Table \ref{tab:knn_uniform_loan} shows the test results for different hyperparameter configurations using uniformly weighted Cross-Validation. We see that k = 1 leads to the best performance.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{k} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{1} & \textbf{24.08} & \textbf{24.29} & 56.07 & 0.09 & 0.22 \\ \hline
+\textbf{2} & 23.41 & 21.74 & 59.13 & \textbf{0.08} & 0.16 \\ \hline
+\textbf{3} & 22.41 & 21.35 & 60.84 & \textbf{0.08} & \textbf{0.14} \\ \hline
+\textbf{5} & 23.84 & 22.97 & 63.02 & \textbf{0.08} & 0.17 \\ \hline
+\textbf{7} & 23.80 & 22.91 & 64.94 & \textbf{0.08} & 0.16 \\ \hline
+\textbf{10} & 24.07 & 23.23 & 66.82 & \textbf{0.08} & 0.18 \\ \hline
+\textbf{20} & 23.68 & 22.69 & \textbf{70.31} & \textbf{0.08} & 0.17 \\ \hline
+\end{tabular}
+\caption{Uniformly weighted, cross-validated KNN Results for Loan Dataset}
+\label{tab:knn_uniform_loan}
+\end{table}
+
+In Figure \ref{fig:knn_plot_loan}, we see that, mostly, the Holdout method outperforms the cross-validated one, whereas the distance-weighted configurations lead to better results. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{img/plot_loan.png}
+\caption{Balanced Accuracy comparison for Loan Dataset}
+\label{fig:knn_plot_loan}
+\end{figure}
+
+\subsubsection{Logistic Regression Classifier}
+
+Among the four variants, V3 and V4 achieved the strongest performance. However, to maintain consistency and ensure comparability with the other classifiers, we proceed with V4. The most stable model for this configuration is shown in Table \ref{tab:loan_best}.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & 31.03 & 27.97 & 83.19 \\ \hline
+\textbf{Cross-Validation} & 249.92 & 0.03 & 31.67 & 28.66 & 83.33 \\ \hline
+\end{tabular}
+}
+\caption{5-fold Cross Validation vs Holdout - Most stable Model (solver=saga, penalty=l2)}
+\label{tab:loan_best}
+\end{table}
+
+Table \ref{tab:loan_penalty_comparison} provides a comparison of the different penalty types. Ridge clearly stands out: it delivers the best performance, is the fastest to fit, and converges in the fewest iterations.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Penalty} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Iterations} \\
+\hline
+\textbf{elasticnet} & 324.68 & 0.02 & 31.67 & 28.66 & 83.31 & 6385 \\ \hline
+\textbf{l1} & 314.66 & 0.02 & 31.68 & 28.67 & 83.28 & 6387 \\ \hline
+\textbf{l2} & 44.51 & 0.02 & 44.49 & 45.17 & 94.68 & 3663 \\ \hline
+\textbf{None} & 212.39 & 0.02 & 31.67 & 28.66 & 83.34 & 6387 \\ \hline
+\end{tabular}
+}
+\caption{Loan Dataset V4 - Penalty Comparison (CV Test Metrics)}
+\label{tab:loan_penalty_comparison}
+\end{table}
+
+
+Figure \ref{fig:loan_solver} presents the comparison of the solvers. Since we are dealing with a multiclass target in this case, liblinear is not available. We observe a very clear separation between the solvers: lbfgs and especially saga require substantially more iterations to converge compared with Newton–CG and Newton–Cholesky. Although the two Newton-based solvers are slightly slower in terms of fit time than saga and lbfgs, this difference is far too small to compensate for the significant convergence disadvantage of the latter. Because Newton–Cholesky performs marginally better than Newton–CG, we select Newton–Cholesky as the final solver.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{img/loan_solver_performance.png}
+\caption{Solver comparison with Balanced Accuracy for Loan Dataset}
+\label{fig:loan_solver}
+\end{figure}
+
+
+\subsubsection{Random Forest Classifier}
+
+Table \ref{tab:comp_acc_rf_200} compares the holdout and cross-validation methods for the Random Forest. The results are nearly identical, with balanced accuracy scores of 37.39\% (Holdout) and 37.29\% (Cross-Validation). This low performance corresponds to the max\_depth = 5 setting, which, as seen in the grid search, underfits the data.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+ & \textbf{Fit Time (s)} & \textbf{Score Time (s)} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} \\
+\hline
+\textbf{Holdout} & - & - & \textbf{37.39} & \textbf{34.92} & \textbf{92.96} \\ \hline
+\textbf{Cross-Validation} & 4.02 & 0.15 & 37.29 & 34.59 & 92.95 \\
+\hline
+\end{tabular}
+}
+\caption{Holdout Split vs Cross Validation for Random Forest (n\_estimators = 200, max depth = 5)}
+\label{tab:comp_acc_rf_200}
+\end{table}
+
+Table \ref{tab:rf_grid_loan_v1} displays the 5-fold cross-validation results for the Random Forest grid search. In general, it can be said that max\_depth is the dominant factor, with shallower trees performing poorly. The configuration max\_depth = None with n\_estimators = 400 is the outperforming one, achieving 52.47\% balanced accuracy. 
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+\textbf{n\_estimators} & \textbf{max\_depth} & \textbf{Balanced Accuracy (\%)} & \textbf{F1 Macro (\%)} & \textbf{ROC-AUC (\%)} & \textbf{Fit Time (s)} & \textbf{Score Time (s)} \\ \hline
+\textbf{100} & None & 51.78 & 51.37 & 96.13 & 6.01 & 0.18 \\ \hline
+\textbf{200} & None & 52.30 & 51.98 & 97.09 & 11.79 & 0.33 \\ \hline
+\textbf{400} & None & 52.47 & 52.03 & 97.36 & 22.41 & 0.60 \\ \hline
+\textbf{600} & None & 52.40 & 51.81 & 97.47 & 65.03 & 4.74 \\ \hline
+\textbf{100} & 5 & 36.62 & 33.84 & 92.68 & 2.23 & 0.09 \\ \hline
+\textbf{200} & 5 & 37.29 & 34.59 & 92.95 & 4.02 & 0.15 \\ \hline
+\textbf{400} & 5 & 37.01 & 34.29 & 93.05 & 7.49 & 0.23 \\ \hline
+\textbf{600} & 5 & 37.05 & 34.37 & 93.17 & 17.25 & 0.63 \\ \hline
+\textbf{100} & 10 & 46.18 & 45.49 & 96.14 & 3.97 & 0.14 \\ \hline
+\textbf{200} & 10 & 46.23 & 45.42 & 96.39 & 7.59 & 0.22 \\ \hline
+\textbf{400} & 10 & 46.46 & 45.56 & 96.57 & 15.43 & 0.53 \\ \hline
+\textbf{600} & 10 & 46.21 & 45.30 & 96.57 & 26.11 & 0.88 \\ \hline
+\end{tabular}
+}
+\caption{Random Forest 5-Fold CV Grid Search - Loan Dataset (V1)}
+\label{tab:rf_grid_loan_v1}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{img/rf_loan_v2_hyperparams.png}
+    \caption{Random Forest hyperparameter tuning for the Loan (v2) dataset, showing performance changes based on $n\_estimators$ and $max\_depth$.}
+    \label{fig:rf_loan_hyperparams}
+\end{figure}
+
+Figure \ref{fig:rf_loan_hyperparams} illustrates the hyperparameter results for the Loan (v2) dataset. Similar to the Hotel dataset, max\_depth is the most influential parameter. Fully grown trees (max\_depth = None) significantly outperform shallower ones, which appear to underfit the data. The model's performance also shows a small but consistent improvement as the number of estimators increases, with the best result of 53.38\% balanced accuracy achieved with n\_estimators = 600 and max\_depth = None.
+
+\section{Conclusion}
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multicolumn{1}{|l|}{\textbf{}} & \textbf{Accident} & \textbf{Breast Cancer v4} & \textbf{Hotel Reservations v2} & \textbf{Loan v4} \\ \hline
+
+\textbf{k-NN} & \begin{tabular}[c]{@{}c@{}}Holdout\\ k=10\\ Weight=Distance\\ \textbf{Bal. Acc.=52.63\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Holdout\\ k=10\\ Weight=Uniform\\ \textbf{Bal. Acc.=98.48\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Cross-Validation\\ k=10\\ Weight=Distance\\ \textbf{Bal. Acc.=83.65\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Holdout\\ k=10\\ Weight=Distance\\ \textbf{Bal. Acc.=25.11\%}\end{tabular} \\ \hline
+
+\textbf{Logistic Regression} & \begin{tabular}[c]{@{}c@{}}Cross Validation\\ Penalty=L2(Ridge)\\ Solver=Newton-CG\\ \textbf{Bal. Acc.=50.08\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Holdout\\ Penalty=L1(Lasso)\\ Solver=Liblinear\\ \textbf{Bal. Acc.=96.30\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Holdout\\ Penalty=None\\ Solver=Newton-Cholesky\\ \textbf{Bal. Acc.=75.43\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Holdout\\ Penalty=L2(Ridge)\\ Solver=Newton-Cholesky\\ \textbf{Bal. Acc.=44.77\%}\end{tabular} \\ \hline
+
+\textbf{Random Forest} & \begin{tabular}[c]{@{}c@{}}Holdout\\ Estimators=100\\ Max Depth=10\\ \textbf{Bal. Acc.=52.63\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Holdout\\ Estimators=100\\ Max Depth=None\\ \textbf{Bal. Acc.=98.48\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Cross-Validation,\\ Estimators=200\\ Max Depth=None\\ \textbf{Bal. Acc.=88.13\%}\end{tabular} & \begin{tabular}[c]{@{}c@{}}Holdout\\ Estimators=600\\ Max Depth=None\\ \textbf{Bal. Acc.=53.56\%} \end{tabular} \\ \hline
+
+\end{tabular}
+}
+\caption{Hyperparameter Configurations achieving best Balanced Accuracy values per Dataset}
+\label{tab:comp_all}
+\end{table}
+
+Table \ref{tab:comp_all} lists the evaluation methods along with the hyperparameter settings that achieve the best Balanced Accuracy values for each dataset. We considered the latest, simplest versions of each dataset for the comparison. 
+
+When looking at the results for the k-NN classifier, we see that for every dataset, the k is set to 10. Additionally, in most cases, the Holdout method with a distance-weighted setting is preferred. The k-NN classifier has poor performance for the first dataset, for which the small size of the dataset could be the reason. The Loan Dataset contains many features (123). We know that the performance of the k-NN classifier falls drastically as the number of features increases. So, we can say that the large number of features causes the classifier to achieve bad classifications. In the other datasets, the performances of the k-NN classifiers are pretty okay. The performance for the Hotel Reservations dataset could be lower because has more features than the Breast Cancer dataset.
+
+The performance of logistic regression varied noticeably across our four datasets. For the Accident dataset, we assume that the comparatively weak results were due to the very small sample size. For the Loan dataset, performance was likely limited by the dataset’s high complexity. For the most datasets, the holdout test results were generally higher than the 5-fold cross-validation scores. We also observed that the choice of solver had a significant impact on runtime, especially with the Newton–Cholesky and Newton-CG method. The Accident, Loan and Breast Cancer datasets exhibited substantial collinearity among their features. Regularization techniques such as Ridge and Lasso helped stabilize the logistic regression model. Among all datasets, logistic regression performed very well on the Breast Cancer data, and moderately well on the Hotel dataset, although it was the weakest performer compared to the other classifiers we tested.
+
+For the Random Forest classifier, performance was highly dataset-dependent. It achieved outstanding results on the Breast Cancer dataset with 98.48\% accuracy and was the top-performing model for the Hotel Reservations dataset at 88.13\%. For both, the best configurations used max\_depth=None , indicating the model's ability to handle complex, non-linear relationships was a significant advantage. It performed very poorly on the Accident dataset (52.63\%), which suggests the features had very little predictive power, a problem consistent across all classifiers. For the complex, high-dimensional Loan dataset, it only achieved 53.56\%. While this score is low, it was still the highest accuracy for the Loan dataset among the three models tested.
+\newpage
+%\printbibliography
+\end{document}
