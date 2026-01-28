@@ -124,7 +124,7 @@ To demonstrate what a report consists of, Table~\ref{tab:cifar10_report} shows t
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
  \textbf{class} & \textbf{precision} & \textbf{recall} & \textbf{f1-score} & \textbf{support} \\ \hline
  \textbf{airplane} & 0.57 & 0.63 & 0.60 & \textbf{1000} \\ \hline
@@ -203,7 +203,7 @@ So, when looking at the signs the classes are representing, it somehow makes sen
 \label{fig:gt_cm}
 \end{figure}
 
-Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy achieved by a model to its corresponding total train time, the model parameters, and the epoch where this performance have been achieved. First, we clearly see that enabling augmentation leads to better performance, but increases the train time as well. So, which model to choose highly depends on the specific task. F.e. if someone cannot afford much time consuming, then one will rather take the model without augmentation and dropout. In any configuration case, the LeNet5 performs very well on the GTSRB dataset.
+Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy achieved by a model to its corresponding total train time, the model parameters, and the epoch where this performance have been achieved. First, we clearly see that enabling augmentation leads to better performance, but increases the train time as well. So, which model to choose highly depends on the specific task. F.e. if someone cannot afford much time consuming, then one will rather take the model without augmentation and dropout. In conclusion, in any configuration case, the LeNet5 performs very well on the GTSRB dataset.
 
 \begin{figure}[H]
 \centering
@@ -216,19 +216,55 @@ Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy ach
 
 \subsection{ML vs. DL}
 
-Now, we will just compare all the different algorithms and models applied to each dataset.
+Now, we will just compare all the different algorithms and models applied to each dataset. For every algorithm / model, we will print a table containing the top 3 models based on the test accuracy. 
 
 \subsubsection{CIFAR-10}
 
-for every algorithm / model, a table with top 3 best models. (so 4 tables with 3 rows each)
+@nayma top 3 table for 1. ML algorithm
 
-and then 1 table, containing best configuration of every algorithm / model (so 1 table with 4 rows)
+@nayma top 3 table for 2. ML algorithm
+
+Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 dataset. We see the best one has an accuracy of approximately 66\%, but with a huge train time.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+ \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epoch Number} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
+ 0.2 & 1 & 66.02 & 84 & 1343.97 & 77.65 \\ \hline
+ 0.5 & 1 & 65.28 & 82 & 1295.78 & 77.67 \\ \hline
+ 0.0 & 1 & 65.14 & 90 & 1433.94 & 82.75 \\ \hline
+\end{tabular}
+\caption{CIFAR10: Top 3 LeNet5 models}
+\label{tab:cifar10_top3}
+\end{table}
+
+@ahnaf top 3 table for resnet
+
 
 \subsubsection{GTSRB}
 
-for every algorithm / model, a table with top 3 best models. (so 4 tables with 3 rows each)
+@nayma top 3 table for 1. ML algorithm
 
-and then 1 table, containing best configuration of every algorithm / model (so 1 table with 4 rows) 
+@nayma top 3 table for 2. ML algorithm
+
+Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the accuracy is so small, one could just choose the simplest model here.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+ \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epoch Number} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
+ 0.5 & 1 & 93.48 & 15 & 631.98 & 84.83 \\ \hline
+ 0.2 & 1 & 93.18 & 16 & 1104.16 & 144.65 \\ \hline
+ 0.5 & 0 & 92.87 & 9 & 254.71 & 64.33 \\ \hline
+\end{tabular}
+\caption{GTSRB: Top 3 LeNet5 models}
+\label{tab:gt_top3}
+\end{table}
+
+@ahnaf top 3 table for resnet
+
 
 \section{Conclusion}
 
