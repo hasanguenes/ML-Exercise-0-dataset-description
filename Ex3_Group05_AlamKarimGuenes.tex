@@ -64,7 +64,7 @@ As the first model, we wanted to use a simple one. For this reason, we chose the
 
 \begin{itemize}
     \item Dropout: 0.0, 0.2, 0.5
-    \item Number of Epochs: range [1, 90] depending on dataset
+    \item Number of Epochs: range: 1, 5, 10, ... , 90 (depending on dataset / relevance)
     \item Augmentation: Yes, No
 \end{itemize}
 
@@ -91,15 +91,110 @@ In this section, we will compare the different approaches across different aspec
 
 \subsubsection{LeNet5}
 
-Beginning with the CIFAR-10 dataset, we first look at the achieved test accuracy depending on the epoch during the training. 
+Beginning with the CIFAR-10 dataset, we first look at the achieved test accuracy depending on the epoch during the training, shown in Figure~\ref{fig:cifar10_test}. The plot clearly shows the possible impact of data augmentation. Without the augmentation, the performance began to decrease very fast. For this reason, in this case we stopped training with epoch 50. However, in the case where data augmentation has been applied, we see that the test accuracy is, even if slowly, still increasing with every new epoch, converging towards 0.65. In context of the dropout value, the plot shows that a dropout of 0.2 would be more or less the best choice here.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/cifar10_test_acc.png}
+\caption{CIFAR10: Test Accuracy vs Epoch}
+\label{fig:cifar10_test}
+\end{figure}
 
+ In general, we see that the model is not performing on a great level for this dataset. Intentionally, LeNet5 has been developed to correctly classify data from MNIST (28x28, grayscale), consisting of handwritten digits from 0 to 9. Consequently, this could be the reason behind the not so well performance on this dataset. 
+
+The next Figure~\ref{fig:cifar10_train_time} shows the time needed for training different model configurations. In order to get a meaningful comparison, we looked at the first 50 epochs (= min number of epochs every model was trained for). First, we see that adding augmentation also introduces additional time for training. As every image has to be processed during augmentation, we see that the total train time in this case is approximately three times higher than without augmentation. Besides, we also see that enabling dropout also leads to more training time (adding more computational effort since randomness, masking etc.). However, in this case the difference is negligible. Consequently, we clearly see that augmentation and dropout can improve the performance, but they will also bring in a drawback containing training time. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/cifar10_train_time.png}
+\caption{CIFAR10: total train time per configuration}
+\label{fig:cifar10_train_time}
+\end{figure}
+
+Next, we want to identify which classes are confused with each other by the model and how that changes with the increase of the number of epochs. For this reason, we just look at Figure~\ref{fig:cifar10_cm}, showing confusion matrices regarding a model with dropout set to zero and augmentation set to 1. The left one is related to the confusion after the first epoch, whereas the right ones shows the matrix after the last epoch, the 90-th epoch in this case. We know that the Test Accuracy after the first epoch is approximately 0.41, whereas being 0.65 for after the 90th one. And we can clearly see that difference in the plots. The confusion matrix got much cleaner on the right side. When we look at the latest matrix, we see that the model still struggles to differ between a dog and a cat, which makes sense. Even after the 90th epoch, the model also cannot distinguish between an automobile and a truck with confidence. The evolution shows that f.e. when in the beginning differing a ship from a truck was challenging, the model more or less learned to distinguish between them. Overall, we clearly see that the performance of the model got a lot better with the high number of epochs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/cifar10_aug_1_cm.png}
+\caption{CIFAR10: comparison confusion matrices ep=1 vs. ep=90 (aug=1, do=0)}
+\label{fig:cifar10_cm}
+\end{figure}
+
+To demonstrate what a report consists of, Table~\ref{tab:cifar10_report} shows the report for a model with the parameters: epochs=5, dropout=0, augmentation=0. We see different measures are computed, also including the number of instances per class (= support). The last row shows the macro average value. Overall, we do not see really good values, which makes sense since this is still corresponds to the fifth epoch and LeNet5 does not perform well on this dataset anyways. We see that cats are not really recognized. The reason for that is most likely, as mentioned above, that the model cannot distinguish between a cat and a dog. We see that the frogs are being recognized on a certain level. When looking at the macro average value, we see that we have an approximately 50\% performance here.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+ \textbf{class} & \textbf{precision} & \textbf{recall} & \textbf{f1-score} & \textbf{support} \\ \hline
+ \textbf{airplane} & 0.57 & 0.63 & 0.60 & \textbf{1000} \\ \hline
+ \textbf{automobile} & \textbf{0.73} & 0.57 & 0.64 & \textbf{1000} \\ \hline
+ \textbf{bird} & 0.40 & 0.51 & 0.45 & \textbf{1000} \\ \hline
+ \textbf{cat} & \textbf{0.39} & 0.39 & \textbf{0.39} & \textbf{1000} \\ \hline
+ \textbf{deer} & 0.53 & \textbf{0.37} & 0.44 & \textbf{1000} \\ \hline
+ \textbf{dog} & 0.52 & 0.38 & 0.44 & \textbf{1000} \\ \hline
+ \textbf{frog} & 0.52 & \textbf{0.71} & 0.60 & \textbf{1000} \\ \hline
+ \textbf{horse} & 0.57 & 0.68 & 0.62 & \textbf{1000} \\ \hline
+ \textbf{ship} & 0.68 & 0.62 & \textbf{0.65} & \textbf{1000} \\ \hline
+ \textbf{truck} & 0.61 & 0.59 & 0.60 & \textbf{1000} \\ \hline
+ \textbf{macro avg} & 0.55 & 0.55 & 0.54 & \textbf{10000} \\ \hline
+\end{tabular}
+\caption{CIFAR10: Report after 5 epochs (aug=0, do=0)}
+\label{tab:cifar10_report}
+\end{table}
+
+To summarize the analysis of different LeNet5 models for this dataset, Figure~\ref{fig:cifar10_test_acc_vs_time} shows the maximum test accuracies with their corresponding model configurations, epochs and train times. As we see, the model does not perform on a great level for this dataset. Since in the case where no augmentation is applied we just got the model worse with every next epoch, we early stopped here, as already described. So without augmentation, we only get an accuracy of about 59\%, but we have a low train time. When applying augmentation, we get best test accuracies (around 66\%) at epochs in range [80, 90]. But when we look at the total train time, we see a huge difference. The whole training process gets approximately 6 - 7 times slower.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/cifar10_max_test_acc_vs_time.png}
+\caption{CIFAR10: max test accuracy vs. train time}
+\label{fig:cifar10_test_acc_vs_time}
+\end{figure}
+
+Now we continue with the analysis of the LeNet5 performance on the second dataset: GTSRB. Figure~\ref{fig:gt_test} again shows the evolution of the test accuracy of several models depending on the epoch number. We see that here, the model performs on a very good level. For this dataset, we show the epoch data until 15, since from this point, the behavior does not change. The test accuracy is already very high just after two epochs, converging towards 93\% with every next epoch. We also see that the augmentation has not that big influence as in the other dataset, but in combination with the dropout it still helps increasing the performance. We also have to say that here, a lot of train data exists, so maybe applying augmentation just nearly adds new aspects / patterns to the data.     
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/gtsrb_test_acc.png}
+\caption{GTSRB: Test Accuracy vs Epoch}
+\label{fig:gt_test}
+\end{figure}
+
+Figure~\ref{fig:gt_train_time} again compares the total train time depending on different configurations. We see that we have a high total train time in general, due to the high amount of train data. Additionally, introducing augmentation again triples the amount of time needed for train. The surprising conclusion here is that the total train time decreases when dropout is set to 0.5, with or without augmentation. Maybe, this have been caused by any other background processes when training the model. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/gtsrb_train_time.png}
+\caption{GTSRB: total train time per configuration}
+\label{fig:gt_train_time}
+\end{figure}
+
+Figure~\ref{fig:gt_cm} compares two confusion matrices of a model configuration, depending on the epoch: Epoch 1 vs. Epoch 15. Dropout is set to zero, whereas augmentation is applied. The accuracies are 80.73\% and 92.62\%, so the first epoch already has a high accuracy. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/gtsrb_aug_1_cm.png}
+\caption{GTSRB: comparison confusion matrices ep=1 vs. ep=15 (aug=1, do=0)}
+\label{fig:gt_cm}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/gtsrb_max_test_acc_vs_time.png}
+\caption{GTSRB: max test accuracy vs. train time}
+\label{fig:gt_test_acc_vs_time}
+\end{figure}
 
 \subsubsection{ResNet18}
 
 \subsubsection{Conclusion}
 
 \subsection{ML vs. DL}
+
+\subsubsection{CIFAR-10}
+
+\subsubsection{GTSRB}
 
 \section{Appendix}
 
