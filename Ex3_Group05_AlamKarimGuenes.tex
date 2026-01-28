@@ -170,7 +170,31 @@ Figure~\ref{fig:gt_train_time} again compares the total train time depending on 
 \label{fig:gt_train_time}
 \end{figure}
 
-Figure~\ref{fig:gt_cm} compares two confusion matrices of a model configuration, depending on the epoch: Epoch 1 vs. Epoch 15. Dropout is set to zero, whereas augmentation is applied. The accuracies are 80.73\% and 92.62\%, so the first epoch already has a high accuracy. 
+Figure~\ref{fig:gt_cm} compares two confusion matrices of a model configuration, depending on the epoch: Epoch 1 vs. Epoch 15. Dropout is set to zero, whereas augmentation is applied. The accuracies are 80.73\% and 92.62\%, so the first epoch already has a high accuracy. This can also be seen in the left confusion matrix, which looks clean in most cases. There are just some cases, where the model is confused. When we look at the classes 0 - 8, we see there are some confusions. And this makes sense, when we look at what these classes represent:
+
+\begin{itemize}
+    \item class 0: Speed limit (20km/h)
+    \item class 1: Speed limit (30km/h)
+    \item class 2: Speed limit (50km/h)
+    \item class 3: Speed limit (60km/h)
+    \item class 4: Speed limit (70km/h)
+    \item class 5: Speed limit (80km/h)
+    \item class 6: End of speed limit (80km/h)
+    \item class 7: Speed limit (100km/h)
+    \item class 8: Speed limit (120km/h)
+\end{itemize}
+
+We also see that the following classes are confused with especially class 31 (Wild animals crossing):
+
+\begin{itemize}
+    \item class 19: Dangerous curve to the left
+    \item class 21: Double curve
+    \item class 23: Slippery road
+    \item class 24: Road narrows on the right
+    \item etc.
+\end{itemize}
+
+So, when looking at the signs the classes are representing, it somehow makes sense that the model is confused here, since the shapes, colors etc. are quite similar in these cases. When we then look at the right confusion matrix, we see that most of the confusions have been fixed by training. 
 
 \begin{figure}[H]
 \centering
@@ -178,6 +202,8 @@ Figure~\ref{fig:gt_cm} compares two confusion matrices of a model configuration,
 \caption{GTSRB: comparison confusion matrices ep=1 vs. ep=15 (aug=1, do=0)}
 \label{fig:gt_cm}
 \end{figure}
+
+Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy achieved by a model to its corresponding total train time, the model parameters, and the epoch where this performance have been achieved. First, we clearly see that enabling augmentation leads to better performance, but increases the train time as well. So, which model to choose highly depends on the specific task. F.e. if someone cannot afford much time consuming, then one will rather take the model without augmentation and dropout. In any configuration case, the LeNet5 performs very well on the GTSRB dataset.
 
 \begin{figure}[H]
 \centering
@@ -188,16 +214,22 @@ Figure~\ref{fig:gt_cm} compares two confusion matrices of a model configuration,
 
 \subsubsection{ResNet18}
 
-\subsubsection{Conclusion}
-
 \subsection{ML vs. DL}
+
+Now, we will just compare all the different algorithms and models applied to each dataset.
 
 \subsubsection{CIFAR-10}
 
+for every algorithm / model, a table with top 3 best models. (so 4 tables with 3 rows each)
+
+and then 1 table, containing best configuration of every algorithm / model (so 1 table with 4 rows)
+
 \subsubsection{GTSRB}
 
-\section{Appendix}
+for every algorithm / model, a table with top 3 best models. (so 4 tables with 3 rows each)
 
-% we can just print some interesting, extra plots here in the appendix
+and then 1 table, containing best configuration of every algorithm / model (so 1 table with 4 rows) 
+
+\section{Conclusion}
 
 \end{document}
