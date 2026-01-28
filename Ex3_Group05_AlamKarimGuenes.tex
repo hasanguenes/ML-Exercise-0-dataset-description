@@ -22,31 +22,84 @@
 
 \section{Datasets}
 
- \subsection{CIFAR-10}
+\subsection{CIFAR-10}
 
- \subsection{GTSRB}
+@Nayma
+
+\subsection{GTSRB}
+
+@Nayma
 
 \section{Methodology}
 
-% description algorithms
+\subsection{General}
 
-% python etc,
+We used Python for the implementation as the main development tool including several libraries / frameworks. 
 
-% perofrmance measures
+@nayma pls read through this subsection and add information reagrding your ML part
 
-% also explian command line options etc.
+Since the data in both datasets was already splitted into train and test set, we did not have to do a separation. As common, we used the train set to train the DL models and then evaluated the corresponding performances of the different models on the test sets. In order to measure performance, we primarily relied on the (balanced) accuracy and loss metrics (also other metrics reported, look at next paragraph). Besides, we also tracked runtime in terms of training and testing for each model configuration.
 
-% list pc specs in terms of runtime
+Since training a model can last very long, we tried to track any possible information during the train step. For each differently configured model, we stored values such as total train time, accuracy, loss. We also reported Precision, Recall and the resulting F1-score per class regarding the last epoch of a trained model. Also nice to see, we stored the loss and accuracy evolution for each model during train and test processes. A plot showing the confusion matrix is also included.
+
+Scripts are also included in the submission, which are configurable via a command-line options for setting model parameters. Especially, the DL approaches should be further inspected and compared. For this reason, we provide the command-line configuration for these models, which had already demanded a lot of implementation time. How to use the command-line option is described in detail in the submission files. 
+
+In order to avoid huge numbers of calculations causing many hours of training sessions, we inputted images in the 32x32 format to the DL models. However, our implementation also supports 64x64 inputs.
+
+TODO: add PC specs
+
+TODO: explain what kind of augmentation
+
+In the following, the chosen shallow ML algorithms and ML models are introduced. 
+
+\subsection{ML approaches}
+
+@Nayma please describe your 2 ML algorithms
+
+\subsection{DL approaches}
+
+\subsubsection{LeNet5}
+
+As the first model, we wanted to use a simple one. For this reason, we chose the LeNet5 model, as it was also mentioned in the assignment. It contains convolutional and pooling layers followed by fully connected layers. Since there are many implementations provided in the internet, we re-used some implementations, referred to in the code. Although it is not included in the origin model, we also added the dropout option to inspect the impact of dropout. We varied the following parameters to look at different scenarios:
+
+\begin{itemize}
+    \item Dropout: 0.0, 0.2, 0.5
+    \item Number of Epochs: range [1, 90] depending on dataset
+    \item Augmentation: Yes, No
+\end{itemize}
+
+Many other parameters, which are configurable, have been set to default values:
+
+\begin{itemize}
+    \item Activation Function: tanh
+    \item Image Size: 32x32
+    \item Optimizer: Adam
+    \item Learning Rate: 0.001
+\end{itemize}
+
+\subsubsection{ResNet18}
+
+% description algorithms (explaining hypoerparameters etc.)
 
 \section{Results}
+
+In this section, we will compare the different approaches across different aspects.
 
 \subsection{ML approaches}
 
 \subsection{DL approaches}
 
-\subsection{ML vs. DL}
+\subsubsection{LeNet5}
 
-\section{Conclusion}
+Beginning with the CIFAR-10 dataset, we first look at the achieved test accuracy depending on the epoch during the training. 
+
+
+
+\subsubsection{ResNet18}
+
+\subsubsection{Conclusion}
+
+\subsection{ML vs. DL}
 
 \section{Appendix}
 
