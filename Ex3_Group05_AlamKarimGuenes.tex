@@ -50,7 +50,7 @@ TODO: add PC specs
 
 TODO: explain what kind of augmentation
 
-In the following, the chosen shallow ML algorithms and ML models are introduced. 
+In the following, the chosen shallow ML algorithms and DL models are introduced. 
 
 \subsection{ML approaches}
 
@@ -79,13 +79,16 @@ Many other parameters, which are configurable, have been set to default values:
 
 \subsubsection{ResNet18}
 
-% description algorithms (explaining hypoerparameters etc.)
+@ahnaf
+
 
 \section{Results}
 
 In this section, we will compare the different approaches across different aspects.
 
 \subsection{ML approaches}
+
+@nayma
 
 \subsection{DL approaches}
 
@@ -214,15 +217,17 @@ Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy ach
 
 \subsubsection{ResNet18}
 
+@ahnaf
+
 \subsection{ML vs. DL}
 
-Now, we will just compare all the different algorithms and models applied to each dataset. For every algorithm / model, we will print a table containing the top 3 models based on the test accuracy. 
+Now, we will just compare all the different algorithms and models applied to each dataset. For every DL model, we will print a table containing the top 3 models based on the test accuracy. Since they did not get so good results, for the ML algorithms, we will just print the best model based on the teest accuracy.
 
 \subsubsection{CIFAR-10}
 
-@nayma top 3 table for 1. ML algorithm
+@nayma top 1 table for 1. ML algorithm
 
-@nayma top 3 table for 2. ML algorithm
+@nayma top 1 table for 2. ML algorithm
 
 Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 dataset. We see the best one has an accuracy of approximately 66\%, but with a huge train time.
 
@@ -244,9 +249,9 @@ Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 data
 
 \subsubsection{GTSRB}
 
-@nayma top 3 table for 1. ML algorithm
+@nayma top 1 table for 1. ML algorithm
 
-@nayma top 3 table for 2. ML algorithm
+@nayma top 1 table for 2. ML algorithm
 
 Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the accuracy is so small, one could just choose the simplest model here.
 
@@ -256,7 +261,7 @@ Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the acc
 \hline
  \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epoch Number} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
  0.5 & 1 & 93.48 & 15 & 631.98 & 84.83 \\ \hline
- 0.2 & 1 & 93.18 & 16 & 1104.16 & 144.65 \\ \hline
+ 0.2 & 1 & 93.18 & 13 & 1104.16 & 144.65 \\ \hline
  0.5 & 0 & 92.87 & 9 & 254.71 & 64.33 \\ \hline
 \end{tabular}
 \caption{GTSRB: Top 3 LeNet5 models}
@@ -267,5 +272,7 @@ Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the acc
 
 
 \section{Conclusion}
+
+@everybody
 
 \end{document}
