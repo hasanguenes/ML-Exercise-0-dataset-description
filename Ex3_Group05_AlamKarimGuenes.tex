@@ -24,11 +24,21 @@
 
 \subsection{CIFAR-10}
 
-@Nayma
+The CIFAR-10 dataset is a widely used benchmark for image classification tasks. It consists of 60,000 color images of size 32×32 pixels, divided into 10 classes: airplane, automobile, bird, cat, deer, dog, frog, horse, ship, and truck. The dataset is split into 50,000 training images and 10,000 test images. Due to its low resolution and significant variation within each class, CIFAR-10 is commonly used to evaluate and compare both traditional machine learning methods and deep learning models.
+
+We downloaded the data from this site\footnote{https://www.cs.toronto.edu/~kriz/cifar.html} (\textit{CIFAR-10 python version}) .
 
 \subsection{GTSRB}
 
-@Nayma
+The German Traffic Sign Recognition Benchmark (GTSRB) is a real-world dataset for traffic sign classification. It contains over 50,000 images covering 43 different traffic sign classes, collected under diverse real-world conditions. The images show significant variation within each class due to changes in lighting, scale, rotation, motion blur, and background complexity. Image resolutions vary, and the dataset reflects realistic class imbalance. GTSRB is widely used to evaluate the robustness of traditional machine learning approaches and deep learning models, particularly in applications related to autonomous driving and intelligent transportation systems.
+
+For this dataset, we visited this site\footnote{https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html}, where we downloaded the following folders:
+
+\begin{itemize}
+    \item \textit{GTSRB\_Final\_Training\_Images.zip}: contains train images with their labels
+    \item \textit{GTSRB\_Final\_Test\_Images.zip}: conains test images with a csv file. However, this csv file does not contain the labels. For this reason, we do not use it.
+    \item \textit{GTSRB\_Final\_Test\_GT.zip}: contains the labels for the test images.
+\end{itemize}
 
 \section{Methodology}
 
@@ -48,17 +58,18 @@ In order to avoid huge numbers of calculations causing many hours of training se
 
 TODO: add PC specs
 
-TODO: explain what kind of augmentation
-
 In the following, the chosen shallow ML algorithms and DL models are introduced. 
 
 \subsection{ML approaches}
 
 @Nayma please describe your 2 ML algorithms
+\subsubsection{Logistic Regression}
+
+
 
 \subsection{DL approaches}
 
-\subsubsection{LeNet5}
+\subsubsection{Simple LeNet5 Architecture}
 
 As the first model, we wanted to use a simple one. For this reason, we chose the LeNet5 model, as it was also mentioned in the assignment. It contains convolutional and pooling layers followed by fully connected layers. Since there are many implementations provided in the internet, we re-used some implementations, referred to in the code. Although it is not included in the origin model, we also added the dropout option to inspect the impact of dropout. We varied the following parameters to look at different scenarios:
 
@@ -77,10 +88,37 @@ Many other parameters, which are configurable, have been set to default values:
     \item Learning Rate: 0.001
 \end{itemize}
 
-\subsubsection{ResNet18}
+\subsubsection{ResNet18 Architecture and Transfer Learning}
 
-@ahnaf
+As our second model, we used \textbf{ResNet18}, a more modern CNN architecture compared to LeNet5. The key feature of ResNet is its \textbf{residual connections}. This feature addresses the vanishing gradient problem in deep networks. Basically, they allow the network to skip layers; instead of learning complete transformations, each layer learns only the residual difference. 
 
+A major advantage of ResNet18 over LeNet5 is its capability for \textbf{transfer learning}. This allows us to use ImageNet pretrained weights as a starting point. We tested both training from scratch and using ImageNet pretrained weights. Additionally, we have the option to \textbf{freeze the backbone}. When activated, the convolutional layers are frozen and not updated during training (advantage: significant resource savings). In this configuration, the frozen backbone provides learned feature representations from ImageNet, while only the final classification layer is trained. This is why freezing doesn't make sense when we're not using transfer learning – freezing random weights provides no benefit. 
+
+We also added Dropout for the final layer to combat potential overfitting problems. Otherwise, we used similar parameters as with LeNet.
+
+We varied the following parameters during our experiments:
+\begin{itemize}
+    \item \textbf{Dropout:} 0.0, 0.2, 0.5
+    \item \textbf{Number of Epochs:} 20
+    \item \textbf{Augmentation:} Yes, No
+\end{itemize}
+
+Other parameters were kept at default values:
+\begin{itemize}
+    \item \textbf{Image Size:} 32$\times$32
+    \item \textbf{Optimizer:} Adam
+    \item \textbf{Learning Rate:} 0.001
+    \item \textbf{Activation Function:} ReLU (ResNet default)
+\end{itemize}
+
+\subsection{Data Augmentation}
+
+We applied dataset-specific augmentation to the training set only to improve model generalization and robustness:
+
+\begin{itemize}
+    \item \textbf{GTSRB:} We utilized ColorJitter (brightness/contrast $\pm$15\%, hue $\pm$2\%), RandomRotation ($\pm$8°), and RandomAffine (translate $\pm$3\%, scale 0.95--1.05). These transformations simulate realistic lighting conditions and camera angles while preserving sign semantics, ensuring that color and shape remain recognizable.
+    \item \textbf{CIFAR-10:} We applied RandomCrop (32$\times$32, padding=4) and RandomHorizontalFlip ($p=0.5$). These represent standard augmentations for natural images, introducing shift and flip invariance to the model.
+\end{itemize}
 
 \section{Results}
 
