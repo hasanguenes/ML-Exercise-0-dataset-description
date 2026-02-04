@@ -9,7 +9,7 @@
 \pagestyle{fancy}
 \setlength{\headheight}{15pt}
 \fancyhead[L]{ML Exercise 3}
-\fancyhead[R]{Group 05: 12229237, 12512103, 01608730}  
+\fancyhead[R]{Group 05: 12229237, 01608730}  
 
 \newpage    
 
@@ -54,9 +54,7 @@ Since training a model can last very long, we tried to track any possible inform
 
 Scripts are also included in the submission, which are configurable via a command-line options for setting model parameters. Especially, the DL approaches should be further inspected and compared. For this reason, we provide the command-line configuration for these models, which had already demanded a lot of implementation time. How to use the command-line option is described in detail in the submission files. 
 
-In order to avoid huge numbers of calculations causing many hours of training sessions, we inputted images in the 32x32 format to the DL models. However, our implementation also supports 64x64 inputs.
-
-TODO: add PC specs
+In order to avoid huge numbers of calculations that cause many hours of training sessions, we input images in the 32x32 format to the DL models. However, our implementation also supports 64x64 inputs.
 
 In the following, the chosen shallow ML algorithms and DL models are introduced. 
 
@@ -64,8 +62,13 @@ In the following, the chosen shallow ML algorithms and DL models are introduced.
 
 @Nayma please describe your 2 ML algorithms
 \subsubsection{Logistic Regression}
+Since Logistic Regression is a widely used baseline classifier, we applied it to both the CIFAR-10 and GTSRB datasets. The model learns a linear decision boundary during training and outputs class probabilities. To support classification across multiple classes, the model is extended using a one-vs-rest approach. Two hyperparameters are considered: the regularization parameter (C), which controls the trade-off between model complexity and generalization, and the penalty parameter, which defines the type of regularization applied.
 
+Logistic Regression is computationally efficient and easy to interpret.
+\subsubsection{Support Vector Machine}
+Since Support Vector Machines (SVMs) are well suited for high-dimensional feature spaces, we applied them to both the CIFAR-10 and GTSRB datasets. SVMs aim to find a decision boundary that maximizes the margin between classes. Similar to Logistic Regression, two hyperparameters are explored: the regularization parameter (C), which controls the penalty for misclassified samples, and the penalty parameter, which specifies the regularization norm.
 
+SVMs generally achieve stronger performance than Logistic Regression on both datasets. However, they are computationally more expensive.
 
 \subsection{DL approaches}
 
@@ -90,25 +93,25 @@ Many other parameters, which are configurable, have been set to default values:
 
 \subsubsection{ResNet18 Architecture and Transfer Learning}
 
-As our second model, we used \textbf{ResNet18}, a more modern CNN architecture compared to LeNet5. The key feature of ResNet is its \textbf{residual connections}. This feature addresses the vanishing gradient problem in deep networks. Basically, they allow the network to skip layers; instead of learning complete transformations, each layer learns only the residual difference. 
+As our second model, we used ResNet18, a more modern CNN architecture compared to LeNet5. The key feature of ResNet is its residual connections. This feature addresses the vanishing gradient problem in deep networks. Basically, they allow the network to skip layers; instead of learning complete transformations, each layer learns only the residual difference. 
 
-A major advantage of ResNet18 over LeNet5 is its capability for \textbf{transfer learning}. This allows us to use ImageNet pretrained weights as a starting point. We tested both training from scratch and using ImageNet pretrained weights. Additionally, we have the option to \textbf{freeze the backbone}. When activated, the convolutional layers are frozen and not updated during training (advantage: significant resource savings). In this configuration, the frozen backbone provides learned feature representations from ImageNet, while only the final classification layer is trained. This is why freezing doesn't make sense when we're not using transfer learning – freezing random weights provides no benefit. 
+A major advantage of ResNet18 over LeNet5 is its capability for transfer learning. This allows us to use ImageNet pretrained weights as a starting point. We tested both training from scratch and using ImageNet pretrained weights. Additionally, we have the option to freeze the backbone. When activated, the convolutional layers are frozen and not updated during training (advantage: significant resource savings). In this configuration, the frozen backbone provides learned feature representations from ImageNet, while only the final classification layer is trained. This is why freezing doesn't make sense when we're not using transfer learning – freezing random weights provides no benefit. 
 
 We also added Dropout for the final layer to combat potential overfitting problems. Otherwise, we used similar parameters as with LeNet.
 
 We varied the following parameters during our experiments:
 \begin{itemize}
-    \item \textbf{Dropout:} 0.0, 0.2, 0.5
-    \item \textbf{Number of Epochs:} 20
-    \item \textbf{Augmentation:} Yes, No
+    \item Dropout: 0.0, 0.2, 0.5
+    \item Number of Epochs: 20
+    \item Augmentation: Yes, No
 \end{itemize}
 
 Other parameters were kept at default values:
 \begin{itemize}
-    \item \textbf{Image Size:} 32$\times$32
-    \item \textbf{Optimizer:} Adam
-    \item \textbf{Learning Rate:} 0.001
-    \item \textbf{Activation Function:} ReLU (ResNet default)
+    \item Image Size: 32$\times$32
+    \item Optimizer: Adam
+    \item Learning Rate: 0.001
+    \item Activation Function: ReLU (ResNet default)
 \end{itemize}
 
 \subsection{Data Augmentation}
@@ -126,7 +129,10 @@ In this section, we will compare the different approaches across different aspec
 
 \subsection{ML approaches}
 
-@nayma
+\subsubsection{Feature Extractions}
+
+\subsubsection{Random Forest}
+\subsubsection{Logistic Regression}
 
 \subsection{DL approaches}
 
@@ -253,9 +259,202 @@ Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy ach
 \label{fig:gt_test_acc_vs_time}
 \end{figure}
 
-\subsubsection{ResNet18}
 
-@ahnaf
+\subsubsection{ResNet18}
+\subsubsubsection{GTSRB}
+
+We trained ResNet-18 on the GTSRB dataset with 18 different configurations, varying pre-training (Pre), layer freezing (Frz), data augmentation (Aug), and dropout rates (Drop). Each model was trained for 32 epochs to see which setup works best for traffic sign classification.
+
+Looking at Figure~\ref{fig:gtsrb_performance_analysis}, the most obvious pattern jumps out immediately: freezing the pre-trained layers completely kills the model performance. All frozen configurations (shown in red) get stuck at around 35-37\% accuracy, while non-frozen models (in blue) reach 93-96\%. That's a massive 60 percentage point difference.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/extended_config_analysis_lr0.001_gtsrb.png}
+\caption{GTSRB: Test Accuracy vs Epoch}
+\label{fig:gtsrb_performance_analysis}
+\end{figure}
+
+The problem with freezing becomes clear when we consider what traffic signs actually look like. They have very specific characteristics: geometric shapes, distinctive color patterns, and symbolic content that's quite different from natural images in ImageNet. When we freeze the layers, we're forcing the model to use ImageNet features which are not suitable for our data. The network simply can't adapt these features to what it actually needs to recognize.
+
+Once we allow all layers to train (Frz=No), performance shoots up to the 93-96\% range across all configurations which we can see Figure~\ref{fig:gtsrb_performance_no_freeze}. This shows that the model needs the freedom to adjust those pre-trained features to work with traffic signs.
+
+
+Figure~\ref{fig:gtsrb_combined_analysis} breaks down the impact of individual hyperparameters for all non-frozen configurations. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/interaction_analysis_lr0.001_gtsrb.png}
+\caption{GTSRB: Test Accuracy vs Epoch (without freeze)}
+\label{fig:gt_test}
+\end{figure}
+
+Data augmentation provides a clear benefit, pushing the median accuracy from around 95\%. This makes sense for traffic signs, which can appear under various lighting conditions and angles in real-world scenarios. Dropout rate shows minimal impact. But the models without dropouts tend to perform slightly worse. Pre-trained weights offer a 1-2 percentage point improvement.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/combined_impacts_acc_gtsrb_unfrozen.png}
+\caption{GTSRB: Test Accuracy vs Epoch (without freeze)}
+\label{fig:gtsrb_combined_analysis}
+\end{figure}
+
+
+Figure~\ref{fig:gtsrb_runtime} shows the training time for each configuration. Frozen models are significantly faster, taking only 3-6 minutes compared to 8-14.5 minutes for non-frozen models. This makes sense since freezing means fewer parameters need gradient computation and updates.
+Configurations with augmentation also tend to take longer since each training batch requires additional image transformations. 
+However, as we'll see in the trade-off analysis, this extra training time is clearly justified by the massive performance improvement.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/runtime_analysis_grouped_gtsrb.png}
+\caption{GTSRB: total train time per configuration}
+\label{fig:gtsrb_runtime}
+\end{figure}
+
+Figure~\ref{fig:gtsrb_tradeoff} shows the runtime vs. accuracy for all non-frozen configurations. All models cluster tightly in the 93-96\% accuracy range, with training times varying between 8 and 15 minutes.
+
+The key observation is that runtime doesn't correlate with better performance within this group. A model that takes 14 minutes doesn't perform noticeably better than one that takes 8 minutes - they all end up around 93-96\%. The runtime differences are mainly driven by computational factors like augmentation and whether pre-trained weights are used, not by improved accuracy.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/scatter_runtime_accuracy_unfrozen_gtsrb.png}
+\caption{GTSRB: max test accuracy vs. train time}
+\label{fig:gtsrb_tradeoff}
+\end{figure}
+
+Our best configuration (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0) achieves 96.2\% overall accuracy with weighted averages of 96.3\% precision, 96.2\% recall, and 96.1\% F1-score. To better understand the model's strengths and weaknesses, we examine the top and bottom performing classes in Table~\ref{tab:gtsrb_best_top_flop}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|c|c|l|c|c|c|c|}
+\hline
+ \textbf{Rank} & \textbf{Class} & \textbf{Sign Type} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F1} & \textbf{Test Samples} \\ \hline
+\multicolumn{7}{|c|}{\textbf{Top 5 Classes}} \\ \hline
+ 1 & 20 & Dangerous curve to the right & 1.000 & 1.000 & 1.000 & 90 \\ \hline
+ 2 & 14 & Stop & 0.996 & 1.000 & 0.998 & 270 \\ \hline
+ 3 & 10 & No passing for vehicles over 3.5 metric tons & 1.000 & 0.992 & 0.996 & 660 \\ \hline
+ 4 & 17 & No entry & 1.000 & 0.992 & 0.996 & 360 \\ \hline
+ 5 & 16 & Vehicles over 3.5 metric tons prohibited & 0.987 & 1.000 & 0.993 & 150 \\ \hline
+\multicolumn{7}{|c|}{\textbf{Bottom 5 Classes}} \\ \hline
+ 39 & 18 & General caution & 0.946 & 0.897 & 0.921 & 390 \\ \hline
+ 40 & 37 & Go straight or left & 0.843 & 0.983 & 0.908 & 60 \\ \hline
+ 41 & 40 & Roundabout mandatory & 0.792 & 0.933 & 0.857 & 90 \\ \hline
+ 42 & 30 & Beware of ice/snow & 0.803 & 0.840 & 0.821 & 150 \\ \hline
+ 43 & 27 & Pedestrians & 0.795 & 0.517 & 0.626 & 60 \\ \hline
+\end{tabular}
+\caption{GTSRB: Top 5 and Bottom 5 Classes by F1-Score}
+\label{tab:gtsrb_best_top_flop}
+\end{table}
+
+The top-performing classes achieve near-perfect recognition. "Dangerous curve to the right" (Class 20) reaches 100\% across all metrics, likely due to its highly distinctive curved arrow symbol. "Stop" signs (Class 14) also excel with 99.8\% F1-score - their unique octagonal shape and red color make them easily recognizable. Similarly, "No entry" (Class 17) and "No passing for vehicles over 3.5 metric tons" (Class 10) achieve over 99% F1-score, both featuring distinctive circular shapes with clear symbolic content.
+
+The bottom classes reveal interesting challenges. "Pedestrians" (Class 27) is the clear outlier with only 62.6\% F1-score. The low recall (51.7\%) combined with decent precision (79.5\%) means the model often fails to detect this sign. With only 60 training samples and a relatively complex pictogram (human figures), this class lacks sufficient data to learn robust features.
+
+"Beware of ice/snow" (Class 30, 82.1\% F1) shows balanced but mediocre performance, possibly because the snowflake symbol is visually complex. "Roundabout mandatory" (Class 40, 85.7\% F1) has an interesting pattern: high recall (93.3\%) but low precision (79.2\%). This could suggests the model frequently misidentifies other circular signs with arrows as roundabout signs, indicating visual similarity with directional signs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/ResNet18_resnet18_gtsrb32_aug1_do0_0_ep30_adam0_001_dbg1_0_pt1_frz0_20260128-075052_curves.png}
+\caption{GTSRB: Training curves for best model (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0)}
+\label{fig:gtsrb_training_curves}
+\end{figure}
+
+The training curves in Figure~\ref{fig:gtsrb_training_curves} show rapid convergence after 10 epochs, reaching around 95\% evaluation accuracy. Validation accuracy, on the other hand, stagnates after 7 epochs at around 95-96\% with notable oscillations.
+
+The gap between training and validation accuracy is larger here than in CIFAR-10, reaching about 4-5 percentage points. However, the evaluation loss remains stable around 0.15-0.20 without increasing, while training loss continuously drops toward nearly zero. This behavior shows why dropout=0.0 works well here. Data augmentation provides sufficient regularization to prevent harmful overfitting.
+
+\subsubsubsection{CIFAR-10}
+
+We applied the same experimental protocol to CIFAR-10, training ResNet-18 with 18 different configurations across the same hyperparameters: pre-training (Pre), freezing (Frz), augmentation (Aug), and dropout (Drop). Each model was trained for 30 epochs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/extended_config_analysis_lr0.001_cifar10.png}
+\caption{CIFAR-10: Test Accuracy vs Epoch}
+\label{fig:cifar10_performance_analysis}
+\end{figure}
+
+Figure~\ref{fig:cifar10_performance_analysis} reveals a familiar pattern as GTSRB: frozen models (red) fail completely at 37-47\% accuracy, while non-frozen models (blue) reach 75-85\%. That's a 40 percentage point gap.
+
+However, unlike GTSRB, the explanation here is different. ImageNet actually contains very similar content to CIFAR-10 - both include animals, vehicles, everyday objects, and household items. We think CIFAR-10 uses tiny 32x32 pixel images, while ResNet-18 was pre-trained on ImageNet's 224x224 images. At such low resolution, there's simply not enough visual information for the frozen ImageNet features to work with.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/interaction_analysis_lr0.001_cifar10.png}
+\caption{GTSRB: Test Accuracy vs Epoch (without freeze)}
+\label{fig:cifar10_performance_no_freeze}
+\end{figure}
+
+For further analysis, we refer to Figure \ref{fig:cifar10_performance_no_freeze}, which illustrates the performance of all models without freezing. In this visualization, a clearer separation emerges between pretrained and non-pretrained models, as well as between those with and without data augmentation. The pretrained models perform significantly better, which can be attributed to the fact that ImageNet shares more similarities with CIFAR-10 than it does with GTSRB.
+
+While the performance of non-augmented, pretrained models remains mostly stagnant after 15 epochs, the augmented, pretrained models reach their peak around the 20-epoch. The non-pretrained, augmented models show the most significant improvement as epochs increase and might even continue to improve beyond 30 epochs. After 20 epochs, these models eventually surpass the performance of the pretrained, non-augmented models.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/combined_impacts_acc_cifar10_unfrozen.png}
+\caption{GTSRB: Test Accuracy vs Epoch (without freeze)}
+\label{fig:cifar10_combined_analysis}
+\end{figure}
+
+Figure \ref{fig:cifar10_combined_analysis} breaks down the impact of individual hyperparameters for all non-frozen configurations. Data augmentation exerts the strongest influence, boosting the median accuracy from approximately 77\% to 83.5\%. This substantial improvement underscores the necessity of augmentation for effectively learning features from the limited visual information in small 32x32 images. Similarly, pre-trained weights provide a distinct advantage, raising the median accuracy from 78\% to 82.5\%. This confirms that the semantic features learned from ImageNet transfer effectively to CIFAR-10. In contrast, the dropout rate shows almost no impact on the results. All settings (0.0, 0.2, 0.5) produce nearly identical accuracy distributions.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/runtime_analysis_grouped_cifar10.png}
+\caption{CIFAR-10: Runtime Analysis}
+\label{fig:cifar10_runtime}
+\end{figure}
+
+The training times follow a similar pattern to GTSRB. As shown in Figure~\ref{fig:cifar10_runtime}, frozen models are much faster, taking only 2.9-3.6 minutes, while non-frozen models require 9.0-10.5 minutes. This makes sense since freezing means fewer parameters need gradient updates.
+
+Within the non-frozen models, configurations with augmentation take slightly longer (9.7-10.5 minutes) compared to those without augmentation (9.0-9.6 minutes). This is expected since augmentation requires additional image transformations for each training batch.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/scatter_runtime_accuracy_unfrozen_cifar10.png}
+\caption{CIFAR-10: Trade-off - Runtime vs Accuracy (Without Freeze)}
+\label{fig:cifar10_tradeoff}
+\end{figure}
+
+ Looking at the runtime-accuracy trade-off for non-frozen models in Figure \ref{fig:cifar10_tradeoff}, we can see clear clusters. The non-augmented models are weaker but faster. Pre-trained models perform much better but do not require extra training time. In contrast, in almost every group, increasing the dropout rate makes the models take longer to train but does not improve performance.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+ \textbf{class} & \textbf{precision} & \textbf{recall} & \textbf{f1-score} & \textbf{support} \\ \hline
+ \textbf{airplane} & 0.780 & 0.931 & 0.849 & \textbf{1000} \\ \hline
+ \textbf{automobile} & 0.915 & 0.936 & 0.925 & \textbf{1000} \\ \hline
+ \textbf{bird} & 0.861 & 0.822 & 0.841 & \textbf{1000} \\ \hline
+ \textbf{cat} & 0.706 & 0.719 & 0.713 & \textbf{1000} \\ \hline
+ \textbf{deer} & 0.853 & 0.871 & 0.862 & \textbf{1000} \\ \hline
+ \textbf{dog} & 0.806 & 0.731 & 0.767 & \textbf{1000} \\ \hline
+ \textbf{frog} & 0.868 & 0.912 & 0.889 & \textbf{1000} \\ \hline
+ \textbf{horse} & 0.919 & 0.856 & 0.887 & \textbf{1000} \\ \hline
+ \textbf{ship} & 0.934 & 0.902 & 0.918 & \textbf{1000} \\ \hline
+ \textbf{truck} & 0.927 & 0.867 & 0.896 & \textbf{1000} \\ \hline
+ \textbf{macro avg} & 0.857 & 0.855 & 0.855 & \textbf{10000} \\ \hline
+ \textbf{weighted avg} & 0.857 & 0.855 & 0.855 & \textbf{10000} \\ \hline
+\end{tabular}
+\caption{CIFAR-10: Best Model Report (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0)}
+\label{tab:cifar10_best_report}
+\end{table}
+
+Our best performing configuration uses Pre=Yes, Frz=No, Aug=Yes, and Drop=0.0, achieving an overall accuracy of 85.5\%. As shown in Table~\ref{tab:cifar10_best_report}, performance varies considerably across classes, ranging from 71.3\% to 92.5\% F1-score.
+
+Cat and dog are the weakest performers at 71.3\% and 76.7\% F1-score respectively. At 32x32 resolution, furry four-legged animals are difficult to distinguish. Airplane shows an unusual pattern with high recall (93.1\%) but much lower precision (78.0\%). This suggests the model often misclassifies other objects as airplanes, possibly confusing them with birds at low resolution. In contrast, vehicles (automobile, ship, truck) perform best with F1-scores above 89\%, likely because their rigid shapes remain distinctive even in small images.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3_ahnaf/ResNet18_resnet18_cifar1032_aug1_do0_0_ep30_adam0_001_dbg1_0_pt1_frz0_20260128-110823_curves.png}
+\caption{CIFAR-10: Training curves for best model (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0)}
+\label{fig:cifar10_training_curves}
+\end{figure}
+
+The training curves in Figure \ref{fig:cifar10_training_curves} show that performance rises and is still increasing at 30 epochs. Validation accuracy, on the other hand, stagnates after 20 epochs. So with higher epochs, there is a possibility for overfitting.
+
+Crucially, the evaluation loss remains stable around 0.45--0.50 without decreasing after 12 epochs. The training loss is constantly sinking, likely even after 30 epochs. This controlled behavior shows why dropout is not necessary here.
+
 
 \subsection{ML vs. DL}
 
@@ -263,9 +462,9 @@ Now, we will just compare all the different algorithms and models applied to eac
 
 \subsubsection{CIFAR-10}
 
-@nayma top 1 table for 1. ML algorithm
+@nayma top 3 table for 1. ML algorithm
 
-@nayma top 1 table for 2. ML algorithm
+@nayma top 3 table for 2. ML algorithm
 
 Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 dataset. We see the best one has an accuracy of approximately 66\%, but with a huge train time.
 
@@ -273,7 +472,7 @@ Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 data
 \centering
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
- \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epoch Number} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
+ \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epochs} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
  0.2 & 1 & 66.02 & 84 & 1343.97 & 77.65 \\ \hline
  0.5 & 1 & 65.28 & 82 & 1295.78 & 77.67 \\ \hline
  0.0 & 1 & 65.14 & 90 & 1433.94 & 82.75 \\ \hline
@@ -282,14 +481,25 @@ Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 data
 \label{tab:cifar10_top3}
 \end{table}
 
-@ahnaf top 3 table for resnet
-
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+ \textbf{Drop} & \textbf{Aug} & \textbf{Pre} & \textbf{Frz} & \textbf{Test Acc (\%)} & \textbf{Epochs} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+ 0.0 & 1 & 1 & 0 & 85.47 & 30 & 579.46 & 72.06 \\ \hline
+ 0.2 & 1 & 1 & 0 & 84.91 & 26 & 515.94 & 64.15 \\ \hline
+ 0.5 & 1 & 1 & 0 & 84.74 & 22 & 447.67 & 80.88 \\ \hline
+\end{tabular}
+\caption{CIFAR-10: Top 3 ResNet18 models (Hyperparameters: Drop=Dropout, Aug=Augmentation, Pre=Pretrained, Frz=Freeze)}
+\label{tab:cifar_top3}
+\end{table}
 
 \subsubsection{GTSRB}
 
-@nayma top 1 table for 1. ML algorithm
+@nayma top 3 table for 1. ML algorithm
 
-@nayma top 1 table for 2. ML algorithm
+@nayma top 3 table for 2. ML algorithm
 
 Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the accuracy is so small, one could just choose the simplest model here.
 
@@ -297,12 +507,26 @@ Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the acc
 \centering
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
- \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epoch Number} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
+ \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epochs} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
  0.5 & 1 & 93.48 & 15 & 631.98 & 84.83 \\ \hline
  0.2 & 1 & 93.18 & 13 & 1104.16 & 144.65 \\ \hline
  0.5 & 0 & 92.87 & 9 & 254.71 & 64.33 \\ \hline
 \end{tabular}
 \caption{GTSRB: Top 3 LeNet5 models}
+\label{tab:gt_top3}
+\end{table}
+
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{5pt} % Etwas mehr Platz als vorher, aber kompakt genug
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+ \textbf{Drop} & \textbf{Aug} & \textbf{Pre} & \textbf{Frz} & \textbf{Test Acc (\%)} & \textbf{Epochs} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+ 0.2 & 1 & 1 & 0 & 96.48 & 28 & 622.51 & 202.03 \\ \hline
+ 0.0 & 1 & 1 & 0 & 96.44 & 25 & 666.10 & 206.22 \\ \hline
+ 0.5 & 1 & 0 & 0 & 96.19 & 24 & 689.14 & 212.57 \\ \hline
+\end{tabular}
+\caption{GTSRB: Top 3 ResNet18 models (Hyperparameters: Drop=Dropout, Aug=Augmentation, Pre=Pretrained, Frz=Freeze)}
 \label{tab:gt_top3}
 \end{table}
 
