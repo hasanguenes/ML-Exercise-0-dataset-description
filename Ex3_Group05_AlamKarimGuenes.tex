@@ -46,7 +46,7 @@ For this dataset, we visited this site\footnote{https://sid.erda.dk/public/archi
 
 We used Python for the implementation as the main development tool including several libraries / frameworks. 
 
-@nayma pls read through this subsection and add information reagrding your ML part
+For the traditional machine learning approach, we first focused on extracting meaningful features from the raw data. We employed 3D Color Histograms as well as SIFT descriptors combined with a Bag-of-Visual-Words (BoVW) approach. These features served as input for two different classifiers to establish a baseline: Logistic Regression as a linear model and Random Forest as a representative ensemble method for non-linear relationships. To optimize model configurations and hyperparameters, we additionally used GridSearch in combination with Cross-Validation.
 
 Since the data in both datasets was already splitted into train and test set, we did not have to do a separation. As common, we used the train set to train the DL models and then evaluated the corresponding performances of the different models on the test sets. In order to measure performance, we primarily relied on the (balanced) accuracy and loss metrics (also other metrics reported, look at next paragraph). Besides, we also tracked runtime in terms of training and testing for each model configuration.
 
@@ -445,7 +445,6 @@ Figure~\ref{fig:gt_curves} shows again the performance of the best model during 
 \end{figure}
 
 \subsubsection{ResNet18}
-\subsubsubsection{GTSRB}
 
 We trained ResNet-18 on the GTSRB dataset with 18 different configurations, varying pre-training (Pre), layer freezing (Frz), data augmentation (Aug), and dropout rates (Drop). Each model was trained for 32 epochs to see which setup works best for traffic sign classification.
 
@@ -547,8 +546,6 @@ The training curves in Figure~\ref{fig:gtsrb_training_curves} show rapid converg
 
 The gap between training and validation accuracy is larger here than in CIFAR-10, reaching about 4-5 percentage points. However, the evaluation loss remains stable around 0.15-0.20 without increasing, while training loss continuously drops toward nearly zero. This behavior shows why dropout=0.0 works well here. Data augmentation provides sufficient regularization to prevent harmful overfitting.
 
-\subsubsubsection{CIFAR-10}
-
 We applied the same experimental protocol to CIFAR-10, training ResNet-18 with 18 different configurations across the same hyperparameters: pre-training (Pre), freezing (Frz), augmentation (Aug), and dropout (Drop). Each model was trained for 30 epochs.
 
 \begin{figure}[H]
@@ -640,11 +637,17 @@ The training curves in Figure \ref{fig:cifar10_training_curves} show that perfor
 Crucially, the evaluation loss remains stable around 0.45--0.50 without decreasing after 12 epochs. The training loss is constantly sinking, likely even after 30 epochs. This controlled behavior shows why dropout is not necessary here.
 
 
-\subsection{ML vs. DL}
+\section{Conclusion: ML vs. DL}
 
-Now, we will just compare all the different algorithms and models applied to each dataset. For every DL model, we will print a table containing the top models based on the test accuracy. Since they did not get so good results, for the ML algorithms, we will just print the best model based on the teest accuracy.
+Now, we will compare all the different algorithms and models applied to each dataset. For every DL model, we will print a table containing the top 3 models based on the test accuracy. For the ML algorithms, we print the best model per feature extraction method. 
 
 \subsubsection{CIFAR-10}
+
+Tables~\ref{tab:cifar_lr},~\ref{tab:cifar_rf},~\ref{tab:cifar10_top3}  and~\ref{tab:cifar_top3} show the results for each ML and DL approach. We directly see that the ML algorithms had the worst performance here. For Logistic Regression, the feature extraction method nearly changed anything in terms of accuracy, whereas for the Random Forest method, the feature extraction method had an impact on the accuracy. Among the ML approaches, Random Forest is the clear winner. 
+
+When we look at the DL approaches, we see that they are much better than the ML approaches. First, the LeNet5 model performs with 66 \% significantly better than the ML approaches. However, the ResNet18 model is again significantly better than LeNet5, although the number of epochs here is much lower. When we look at train time, we also see that ResNet18 did need muhc less time than LeNet5. We must not forget that the effect of transfer learning / pretraining can be seen here in the ResNet18 case. We also see that in any top DL approach, data augmentation has been applied, which shows how helpful this method can be. When we consider the LeNet5 models, we see that the Dropout rate does not have a huge impact on the results. Besides, in the ResNet18 case, we even have a best model which does not use dropout during training at all.
+
+Overall, the ResNet18 model with about 85 \% test accuracy can be considered as the clear winner here.
 
 \begin{table}[H]
 \centering
@@ -655,7 +658,7 @@ Now, we will just compare all the different algorithms and models applied to eac
 Color Hist & Ridge & 10 & 31.76 & 413.78 & 0.0092 \\ \hline
 SIFT BoVW & None & - & 31.21 & 1.24 & 0.0024 \\ \hline
 \end{tabular}
-\caption{CIFAR-10: Logistic Regression}
+\caption{CIFAR-10: Best Logistic Regression results per Feature Extraction Method}
 \label{tab:cifar_lr}
 \end{table}
 
@@ -668,11 +671,11 @@ SIFT BoVW & None & - & 31.21 & 1.24 & 0.0024 \\ \hline
 Color Hist & 15 & 90 & 41.96 & 4.27 & 0.0408 \\ \hline
 SIFT BoVW & 15 & 90 & 28.66 & 1.87 & 0.0248 \\ \hline
 \end{tabular}
-\caption{CIFAR-10: Random Forest}
+\caption{CIFAR-10:  Best Random Forest results per Feature Extraction Method}
 \label{tab:cifar_rf}
 \end{table}
 
-Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 dataset. We see the best one has an accuracy of approximately 66\%, but with a huge train time.
+% Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 dataset. We see the best one has an accuracy of approximately 66\%, but with a huge train time.
 
 \begin{table}[H]
 \centering
@@ -703,6 +706,12 @@ Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 data
 
 \subsubsection{GTSRB}
 
+Tables~\ref{tab:gtsrb_lr},~\ref{tab:gtsrb_rf},~\ref{tab:gt_top3} and~\ref{tab:gts_top3} show the results for each ML and DL approach on GTSRB. Compared to CIFAR-10, the ML baselines behave differently: the feature extraction method has a substantial impact. For Logistic Regression, Color Hist performs very poorly, whereas SIFT BoVW reaches almost 50 \%. A similar pattern is visible for Random Forest, where Color Hist achieves 23.13 \% but SIFT BoVW reaches 47.21 \%, which is twice as much. So, here the choice of the feature extraction method is really important for the performance. Among these models, Logistic Regression with SIFT BOVW is the best model.
+
+For the DL approaches, we again see a huge improvement over ML approaches. ML. LeNet5 already achieves strong results around 93 \%, which is much better then the ML approaches. ResNet18 provides an additional improvement to about 96.5 \% test accuracy, which makes it the best one. Here, the benefit of transfer learning / pretraining seems to be smaller here, because the top pretrained ResNet18 models are only slightly better than the best non-pretrained run. We also see that Data Augmentation is still important, but does not have that much of a relevance as in the CIFAR-10 case. We see that for the LeNEt 5 models, we also have one model without augmentation, still performing well. Regarding dropout, the results again indicate that the inluence of on performance is also limited here. 
+
+Overall, ResNet18 with about 96 \% test accuracy can be considered the clear winner on GTSRB, while LeNet5 already offers a strong and more lightweight alternative with circa 93 \% accuracy.
+
 \begin{table}[H]
 \centering
 \setlength{\tabcolsep}{5pt}
@@ -712,7 +721,7 @@ Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 data
 Color Hist & ElasticNet & 1 & 0.5 & 17.67 & 2137.74 & 0.0111 \\ \hline
 SIFT BoVW & ElasticNet & 1 & 0.5 & 49.75 & 444.64 & 0.0046 \\ \hline
 \end{tabular}
-\caption{GTSRB: Logistic Regression}
+\caption{GTSRB:  Best Logistic Regression results per Feature Extraction Method}
 \label{tab:gtsrb_lr}
 \end{table}
 
@@ -725,11 +734,11 @@ SIFT BoVW & ElasticNet & 1 & 0.5 & 49.75 & 444.64 & 0.0046 \\ \hline
 Color Hist & 15 & 90 & 23.13 & 3.79 & 0.0711 \\ \hline
 SIFT BoVW & 15 & 90 & 47.21 & 1.87 & 0.0485 \\ \hline
 \end{tabular}
-\caption{GTSRB: Random Forest}
+\caption{GTSRB:  Best Random Forest results per Feature Extraction Method}
 \label{tab:gtsrb_rf}
 \end{table}
 
-Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the accuracy is so small, one could just choose the simplest model here.
+% Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the accuracy is so small, one could just choose the simplest model here.
 
 \begin{table}[H]
 \centering
@@ -755,13 +764,8 @@ Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the acc
  0.5 & 1 & 0 & 0 & 96.19 & 24 & 689.14 & 212.57 \\ \hline
 \end{tabular}
 \caption{GTSRB: Top 3 ResNet18 models (Hyperparameters: Drop=Dropout, Aug=Augmentation, Pre=Pretrained, Frz=Freeze)}
-\label{tab:gt_top3}
+\label{tab:gts_top3}
 \end{table}
 
-
-
-\section{Conclusion}
-
-@everybody
 
 \end{document}
