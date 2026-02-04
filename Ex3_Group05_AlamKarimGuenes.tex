@@ -168,8 +168,8 @@ Figure \ref{fig:rf_acc} displays the Mean Cross-Validation Test Score for both d
     \label{fig:rf_acc}
 \end{figure}
 
-The results show a clear trend: the Histogram significantly outperforms the SIFT approach on both GTSRB and CIFAR-10. Bei GTSRB sehen wir ein klares Muster
-Regarding hyperparameters, we observe the expected behavior: deeper trees ($d=15$) and a higher number of estimators ($n=90$) yield the best performance, indicating that the models benefit from increased complexity.
+For GTSRB, we observe a clear pattern across both features. Performance improves consistently as the maximum tree depth increases. Throughout all depth configurations up to the maximum, SIFT outperforms Color Histogram. For CIFAR-10, however, the pattern is less pronounced. Color Histogram shows only marginal improvement with increasing tree depth, while SIFT performance remains nearly unchanged. Here, Color Histogram achieves better results across all configurations.
+
 
 We also analyzed the time required to fit the Random Forest models for each fold, as shown in Figure \ref{fig:rf_time}.
 
@@ -182,9 +182,7 @@ We also analyzed the time required to fit the Random Forest models for each fold
 
 Here, we observe an interesting reversal compared to the feature extraction phase. Although SIFT was much slower to extract, it is significantly faster to train than the Color Histogram.
 
-To better understand why the Color Histogram consistently outperformed the SIFT approach, we generated confusion matrices for the best performing Random Forest models from our GridSearch.
-
-Figure \ref{fig:cm_cifar} shows the confusion matrices for the CIFAR-10 dataset.
+To better understand why the Color Histogram consistently outperformed the SIFT approach, we generated confusion matrices for the best performing Random Forest models from our GridSearch. Which we can see in Figure \ref{fig:cm_cifar}. This is the confusion matrix for the CIFAR-10 dataset.
 
 \begin{figure}[h!]
     \centering
@@ -368,6 +366,15 @@ To summarize the analysis of different LeNet5 models for this dataset, Figure~\r
 \label{fig:cifar10_test_acc_vs_time}
 \end{figure}
 
+Figure~\ref{fig:cifar_curves} shows the evolution of the train and evaluation losses and accuracies for the best model. We see no overfitting here, which could be the result of activated dropout. We also see, that the values are always a little bit better for the test / evaluation set. So, predicting the train data was a little bit more difficult than the test data. The reason here could be the data augmentation and the active dropout during training. In general we have an accuracy of about 65 \% in the end, which is not the worst result, but we also cannot say that the model is performing on the best level. besides, we had to go through a lot of epochs here, which can also be computationally expensive.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/LeNet5_lenet5_cifar1032_aug1_do0_2_ep90_adam0_001_dbg1_0_acttanh_adapt0_20260126-202609_curves.png}
+\caption{CIFAR-10: Train & Evaluation curves for best model (Aug=Yes, Drop=0.2)}
+\label{fig:cifar_curves}
+\end{figure}
+
 Now we continue with the analysis of the LeNet5 performance on the second dataset: GTSRB. Figure~\ref{fig:gt_test} again shows the evolution of the test accuracy of several models depending on the epoch number. We see that here, the model performs on a very good level. For this dataset, we show the epoch data until 15, since from this point, the behavior does not change. The test accuracy is already very high just after two epochs, converging towards 93\% with every next epoch. We also see that the augmentation has not that big influence as in the other dataset, but in combination with the dropout it still helps increasing the performance. We also have to say that here, a lot of train data exists, so maybe applying augmentation just nearly adds new aspects / patterns to the data.     
 
 \begin{figure}[H]
@@ -419,7 +426,7 @@ So, when looking at the signs the classes are representing, it somehow makes sen
 \label{fig:gt_cm}
 \end{figure}
 
-Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy achieved by a model to its corresponding total train time, the model parameters, and the epoch where this performance have been achieved. First, we clearly see that enabling augmentation leads to better performance, but increases the train time as well. So, which model to choose highly depends on the specific task. F.e. if someone cannot afford much time consuming, then one will rather take the model without augmentation and dropout. In conclusion, in any configuration case, the LeNet5 performs very well on the GTSRB dataset.
+Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy achieved by a model to its corresponding total train time, the model parameters, and the epoch where this performance have been achieved. First, we clearly see that enabling augmentation leads to better performance, but increases the train time as well. So, which model to choose highly depends on the specific task. F.e. if someone cannot afford much time consuming, then one will rather take the model without augmentation and dropout. In conclusion, in any configuration case, the LeNet5 performs very well on the GTSRB dataset.
 
 \begin{figure}[H]
 \centering
@@ -428,6 +435,14 @@ Last, Figure~\ref{fig:gt_test_acc_vs_time} relates the maximum test accuracy ach
 \label{fig:gt_test_acc_vs_time}
 \end{figure}
 
+Figure~\ref{fig:gt_curves} shows again the performance of the best model during the train and evaluation process of each epoch. We see we have a really fast convergence here. After 4 - 6 epochs, we reach a more or less stable evaluation accuracy here with 90 \%. So the model performs really well for this big dataset. We also see a minimal overfitting, which begins with the fifth epoch. So, at this point, the model still gets better when predicting train data, but cannot generalize in a better way anymore. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{img_ex3/LeNet5_lenet5_gtsrb32_aug1_do0_5_ep15_adam0_001_dbg1_0_acttanh_adapt0_20260126-043637_curves.png}
+\caption{GTSRB: Train \& Evaluation curves for best model (Aug=Yes, Drop=0.5)}
+\label{fig:gt_curves}
+\end{figure}
 
 \subsubsection{ResNet18}
 \subsubsubsection{GTSRB}
@@ -524,7 +539,7 @@ The bottom classes reveal interesting challenges. "Pedestrians" (Class 27) is th
 \begin{figure}[H]
 \centering
 \includegraphics[width=1\linewidth]{img_ex3_ahnaf/ResNet18_resnet18_gtsrb32_aug1_do0_0_ep30_adam0_001_dbg1_0_pt1_frz0_20260128-075052_curves.png}
-\caption{GTSRB: Training curves for best model (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0)}
+\caption{GTSRB:  Train & Evaluation curves for best model (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0)}
 \label{fig:gtsrb_training_curves}
 \end{figure}
 
@@ -616,7 +631,7 @@ Cat and dog are the weakest performers at 71.3\% and 76.7\% F1-score respectivel
 \begin{figure}[H]
 \centering
 \includegraphics[width=1\linewidth]{img_ex3_ahnaf/ResNet18_resnet18_cifar1032_aug1_do0_0_ep30_adam0_001_dbg1_0_pt1_frz0_20260128-110823_curves.png}
-\caption{CIFAR-10: Training curves for best model (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0)}
+\caption{CIFAR-10: Train & Evaluation curves for best model (Pre=Yes, Frz=No, Aug=Yes, Drop=0.0)}
 \label{fig:cifar10_training_curves}
 \end{figure}
 
