@@ -52,7 +52,7 @@ Since the data in both datasets was already splitted into train and test set, we
 
 Since training a model can last very long, we tried to track any possible information during the train step. For each differently configured model, we stored values such as total train time, accuracy, loss. We also reported Precision, Recall and the resulting F1-score per class regarding the last epoch of a trained model. Also nice to see, we stored the loss and accuracy evolution for each model during train and test processes. A plot showing the confusion matrix is also included.
 
-Scripts are also included in the submission, which are configurable via a command-line options for setting model parameters. Especially, the DL approaches should be further inspected and compared. For this reason, we provide the command-line configuration for these models, which had already demanded a lot of implementation time. How to use the command-line option is described in detail in the submission files. 
+Scripts are also included in the submission, which are configurable via a command-line options for setting model parameters. How to use the command-line option is described in detail in the submission files. 
 
 In order to avoid huge numbers of calculations that cause many hours of training sessions, we input images in the 32x32 format to the DL models. However, our implementation also supports 64x64 inputs.
 
@@ -60,15 +60,14 @@ In the following, the chosen shallow ML algorithms and DL models are introduced.
 
 \subsection{ML approaches}
 
-@Nayma please describe your 2 ML algorithms
 \subsubsection{Logistic Regression}
 Since Logistic Regression is a widely used baseline classifier, we applied it to both the CIFAR-10 and GTSRB datasets. The model learns a linear decision boundary during training and outputs class probabilities. To support classification across multiple classes, the model is extended using a one-vs-rest approach. Two hyperparameters are considered: the regularization parameter (C), which controls the trade-off between model complexity and generalization, and the penalty parameter, which defines the type of regularization applied.
 
 Logistic Regression is computationally efficient and easy to interpret.
-\subsubsection{Support Vector Machine}
-Since Support Vector Machines (SVMs) are well suited for high-dimensional feature spaces, we applied them to both the CIFAR-10 and GTSRB datasets. SVMs aim to find a decision boundary that maximizes the margin between classes. Similar to Logistic Regression, two hyperparameters are explored: the regularization parameter (C), which controls the penalty for misclassified samples, and the penalty parameter, which specifies the regularization norm.
 
-SVMs generally achieve stronger performance than Logistic Regression on both datasets. However, they are computationally more expensive.
+\subsubsection{Random Forest}
+Since Random Forests are robust ensemble classifiers that handle complex patterns well, we applied them to both the CIFAR-10 and GTSRB datasets. Unlike Logistic Regression, which learns linear decision boundaries, Random Forests build multiple decision trees and combine their predictions through majority voting, making them fundamentally different and well-suited for capturing non-linear relationships. Key hyperparameters are explored: the number of estimators (n\_estimators), which defines how many trees are built, and the maximum depth (max\_depth), which controls tree complexity.
+Random Forests are computationally more expensive than Logistic Regression but offer stronger performance through their ability to model complex, non-linear patterns.
 
 \subsection{DL approaches}
 
@@ -131,8 +130,178 @@ In this section, we will compare the different approaches across different aspec
 
 \subsubsection{Feature Extractions}
 
+Before training our classifiers, we transformed the raw image data into feature vectors using two distinct approaches -3D Color Histogram and SIFT + Bag of Visual Words
+
+
+\begin{itemize}
+    \item \textbf{3D Color Histogram:} We computed a joint histogram across the three color channels using \textbf{8 bins} per channel. This results in a feature vector that captures the global color distribution of an image but discards all spatial information.
+    \item \textbf{SIFT + Bag of Visual Words:} We used the Scale-Invariant Feature Transform (SIFT) to detect local keypoints (edges, corners, textures). To aggregate these variable-length descriptors into a fixed-size vector, we applied the Bag of Visual Words (BoVW) approach. We used K-Means clustering to build a vocabulary of 100 visual words (clusters). Each image is then represented as a histogram of these visual words.
+\end{itemize}
+
+We analyzed the time required to extract these features for both the training and testing sets. Figure \ref{fig:feature_runtime} illustrates the results for both datasets (GTSRB and CIFAR-10).
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/feature_extraction_comparison_combined.png}
+    \caption{Runtime comparison of feature extraction methods.}
+    \label{fig:feature_runtime}
+\end{figure}
+
+On both datasets the histogram method is much faster than SIFT. 
+
 \subsubsection{Random Forest}
+
+To evaluate the effectiveness of our extracted features, we first trained a Random Forest classifier. We performed a GridSearch to optimize the hyperparameters, using 3-Fold Cross-Validation to ensure the robustness of our results.
+
+We explored the following hyperparameter space:
+\begin{itemize}
+    \item \textbf{Number of Estimators ($n\_estimators$):} 30, 60, 90
+    \item \textbf{Maximum Depth ($max\_depth$):} 5, 10, 15
+\end{itemize}
+
+Figure \ref{fig:rf_acc} displays the Mean Cross-Validation Test Score for both datasets.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/rf_gridsearch_full_comparison.png}
+    \caption{Random Forest GridSearch Performance.}
+    \label{fig:rf_acc}
+\end{figure}
+
+The results show a clear trend: the Histogram significantly outperforms the SIFT approach on both GTSRB and CIFAR-10. We
+Regarding hyperparameters, we observe the expected behavior: deeper trees ($d=15$) and a higher number of estimators ($n=90$) yield the best performance, indicating that the models benefit from increased complexity.
+
+We also analyzed the time required to fit the Random Forest models for each fold, as shown in Figure \ref{fig:rf_time}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/rf_gridsearch_runtime.png}
+    \caption{Training time per fold.}
+    \label{fig:rf_time}
+\end{figure}
+
+Here, we observe an interesting reversal compared to the feature extraction phase. Although SIFT was much slower to extract, it is significantly faster to train than the Color Histogram.
+
+To better understand why the Color Histogram consistently outperformed the SIFT approach, we generated confusion matrices for the best performing Random Forest models from our GridSearch.
+
+Figure \ref{fig:cm_cifar} shows the confusion matrices for the CIFAR-10 dataset.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/rf_confusion_1x2_CIFAR-10.png}
+    \caption{Confusion Matrices for the best Random Forest models on CIFAR-10.}
+    \label{fig:cm_cifar}
+\end{figure}
+
+In the left plot, we can see that the diagonal is significantly darker than in the right plot. Especially Class 3 (cat) and Class 4 (deer) did not perform very well in the SIFT plot. We observe the same result in Figure \ref{fig:rf_acc}.
+
+Figure \ref{fig:cm_gtsrb} displays the results for the GTSRB.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/rf_confusion_1x2_GTSRB.png}
+    \caption{Confusion Matrices for GTSRB (43 Classes).}
+    \label{fig:cm_gtsrb}
+\end{figure}
+
+In Figure \ref{fig:cm_gtsrb}, we now see that SIFT beats the histogram. The diagonal is much more distinctive, and in the top-left corner of the Color Histogram, there are distinct patches of confusion. This time, this is a contradictory result to Figure \ref{fig:rf_acc}, which claimed that the Histogram is better than SIFT. 
+
+In Table \ref{tab:rf_summary}, we can see the reason why. While the Color Histogram achieved a very high Cross-Validation Score ($0.6464$) on GTSRB, the final Test Accuracy dropped massively to $0.2313$. This indicates severe overfitting—the model memorized the color distributions of the training set but failed to generalize. The SIFT model was much more stable (CV: $0.54$, Test: $0.47$).
+
+\begin{table}[H]
+\centering
+\small
+\caption{Summary of Random Forest Performance (Test Set vs. CV Score). Comparison of GTSRB and CIFAR-10.}
+\label{tab:rf_summary}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{CV Score} & \textbf{Accuracy} & \textbf{F1 Score} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+\multicolumn{6}{|c|}{\textbf{GTSRB}} \\ \hline
+Color Histogram & 0.6464 & 0.2313 & 0.1452 & 3.79 & 0.0711 \\ \hline
+SIFT (BoW) & 0.5444 & \textbf{0.4721} & \textbf{0.3393} & 1.87 & 0.0485 \\ \hline
+\multicolumn{6}{|c|}{\textbf{CIFAR-10}} \\ \hline
+Color Histogram & 0.4085 & \textbf{0.4196} & \textbf{0.4159} & 4.27 & 0.0408 \\ \hline
+SIFT (BoW) & 0.2811 & 0.2866 & 0.2738 & 1.87 & 0.0248 \\ \hline
+\end{tabular}
+\end{table}
+
 \subsubsection{Logistic Regression}
+
+Subsequently, we evaluated a Logistic Regression classifier to determine how a linear model handles the extracted features. Similar to the Random Forest approach, we employed GridSearch with 3-Fold Cross-Validation.
+
+The hyperparameter search space focused on regularization strategies:
+\begin{itemize}
+    \item \textbf{Penalty:} None, Lasso (L1), Ridge (L2), ElasticNet
+    \item \textbf{Inverse Regularization Strength ($C$):} 0.1, 1, 10
+\end{itemize}
+
+Figure \ref{fig:lr_acc} illustrates the Mean Cross-Validation Test Score.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/lr_gridsearch_full_comparison.png}
+    \caption{Logistic Regression GridSearch Performance (SIFT vs. Histogram).}
+    \label{fig:lr_acc}
+\end{figure}
+
+The results for Logistic Regression reveal an contrast to the Random Forest results. SIFT is on the GTSRB set much better than histogram. For the CIFAR-10 set color histogram is slightly better than SIFT. Interestingly regarding the performance, any hyperparameter have any impact on the performance.
+
+Figure \ref{fig:lr_time} details the training time per fold. On logistic regression SIFT is much faster than Color Histogram.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/lr_gridsearch_runtime.png}
+    \caption{Logistic Regression: Training time per fold.}
+    \label{fig:lr_time}
+\end{figure}
+
+To gain deeper insights into the misclassifications of the linear models, we generated confusion matrices for the best-performing Logistic Regression configurations found during GridSearch.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/lr_confusion_1x2_CIFAR-10.png}
+    \caption{Logistic Regression Confusion Matrices: CIFAR-10.}
+    \label{fig:lr_cm_cifar}
+\end{figure}
+
+Figure \ref{fig:lr_cm_cifar} depicts the results for CIFAR-10. In contrast to the CV scores, SIFT appears to perform better on CIFAR-10 than the Color Histogram. SIFT is particularly stronger on the higher classes (5--9). However, on classes 3 and 4, the Color Histogram is superior, similar to the Random Forest results. Furthermore, on the outside of the diagonal, there are darker points in the Color Histogram matrix compared to SIFT.
+
+Figure \ref{fig:lr_cm_gtsrb} displays the confusion matrices for the GTSRB dataset. On this set, SIFT clearly outperforms the Color Histogram. This result aligns perfectly with the accuracy pattern observed in Figure \ref{fig:lr_acc}. Furthermore, the off-diagonal regions of the SIFT matrix are much cleaner compared to the Color Histogram, indicating significantly fewer misclassifications.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{img_ex3_ahnaf/lr_confusion_1x2_GTSRB.png}
+    \caption{Logistic Regression Confusion Matrices: GTSRB.}
+    \label{fig:lr_cm_gtsrb}
+\end{figure}
+
+Here, the visualization confirms the performance gap we observed in the accuracy plots. The SIFT matrix (right) exhibits a sharp, well-defined diagonal, indicating that the structural features are well-suited for linear separation.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Logistic Regression Performance. Comparison of GTSRB and CIFAR-10.}
+\label{tab:lr_comparison}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{CV Score} & \textbf{Accuracy} & \textbf{F1 Score} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+\multicolumn{6}{|c|}{\textbf{GTSRB}} \\ \hline
+Color Histogram & 0.3634 $\pm$ 0.0000 & 0.1767 & 0.1224 & 2137.74 & 0.0111 \\ \hline
+SIFT (BoW) & 0.5612 $\pm$ 0.0000 & 0.4975 & 0.4268 & 444.64 & 0.0046 \\ \hline
+\multicolumn{6}{|c|}{\textbf{CIFAR-10}} \\ \hline
+Color Histogram & 0.3179 $\pm$ 0.0000 & 0.3176 & 0.3107 & 413.78 & 0.0092 \\ \hline
+SIFT (BoW) & 0.3034 $\pm$ 0.0000 & 0.3121 & 0.3043 & 1.24 & 0.0024 \\ \hline
+\end{tabular}
+\end{table}
+
+Table \ref{tab:lr_comparison} provides a detailed summary of the final Logistic Regression performance, highlighting the trade-off between accuracy and computational cost.
+
+On the GTSRB dataset, SIFT is the undisputed winner. Not only does it achieve a significantly higher test accuracy ($\approx 49.8\%$ vs. $\approx 17.7\%$), but it also demonstrates much better generalization. We observe a drastic drop in the Color Histogram's performance, falling from a CV score of $0.36$ to a test accuracy of only $0.18$. This large discrepancy suggests severe overfitting to the training set or that the color distributions in the test set differ significantly from the training data. SIFT, by contrast, maintains a more stable performance gap between validation and testing.
+
+On CIFAR-10, the accuracy metrics are surprisingly close, with both methods settling around $31\%$. However, the training time reveals a critical difference. The SIFT (BoW) model trained in a mere \textbf{1.24 seconds}, whereas the Color Histogram required over \textbf{413 seconds}. This extreme efficiency gain makes SIFT far more attractive for this dataset, as it achieves comparable accuracy at a fraction of the computational cost.
+
 
 \subsection{DL approaches}
 
@@ -458,13 +627,35 @@ Crucially, the evaluation loss remains stable around 0.45--0.50 without decreasi
 
 \subsection{ML vs. DL}
 
-Now, we will just compare all the different algorithms and models applied to each dataset. For every DL model, we will print a table containing the top 3 models based on the test accuracy. Since they did not get so good results, for the ML algorithms, we will just print the best model based on the teest accuracy.
+Now, we will just compare all the different algorithms and models applied to each dataset. For every DL model, we will print a table containing the top models based on the test accuracy. Since they did not get so good results, for the ML algorithms, we will just print the best model based on the teest accuracy.
 
 \subsubsection{CIFAR-10}
 
-@nayma top 3 table for 1. ML algorithm
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{Penalty} & \textbf{C} & \textbf{Test Acc (\%)} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+Color Hist & Ridge & 10 & 31.76 & 413.78 & 0.0092 \\ \hline
+SIFT BoVW & None & - & 31.21 & 1.24 & 0.0024 \\ \hline
+\end{tabular}
+\caption{CIFAR-10: Logistic Regression}
+\label{tab:cifar_lr}
+\end{table}
 
-@nayma top 3 table for 2. ML algorithm
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{Max Depth} & \textbf{Trees} & \textbf{Test Acc (\%)} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+Color Hist & 15 & 90 & 41.96 & 4.27 & 0.0408 \\ \hline
+SIFT BoVW & 15 & 90 & 28.66 & 1.87 & 0.0248 \\ \hline
+\end{tabular}
+\caption{CIFAR-10: Random Forest}
+\label{tab:cifar_rf}
+\end{table}
 
 Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 dataset. We see the best one has an accuracy of approximately 66\%, but with a huge train time.
 
@@ -472,7 +663,7 @@ Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 data
 \centering
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
- \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epochs} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
+ \textbf{Drop} & \textbf{Aug} & \textbf{Test Acc (\%) } & \textbf{Epochs} & \textbf{Train time (s)} & \textbf{Test time (s)} \\ \hline
  0.2 & 1 & 66.02 & 84 & 1343.97 & 77.65 \\ \hline
  0.5 & 1 & 65.28 & 82 & 1295.78 & 77.67 \\ \hline
  0.0 & 1 & 65.14 & 90 & 1433.94 & 82.75 \\ \hline
@@ -497,9 +688,31 @@ Table~\ref{tab:cifar10_top3} shows the top 3 LeNet5 models for the CIFAR-10 data
 
 \subsubsection{GTSRB}
 
-@nayma top 3 table for 1. ML algorithm
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{Penalty} & \textbf{C} & \textbf{L1 Ratio} & \textbf{Test Acc (\%)} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+Color Hist & ElasticNet & 1 & 0.5 & 17.67 & 2137.74 & 0.0111 \\ \hline
+SIFT BoVW & ElasticNet & 1 & 0.5 & 49.75 & 444.64 & 0.0046 \\ \hline
+\end{tabular}
+\caption{GTSRB: Logistic Regression}
+\label{tab:gtsrb_lr}
+\end{table}
 
-@nayma top 3 table for 2. ML algorithm
+\begin{table}[H]
+\centering
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{Max Depth} & \textbf{Trees} & \textbf{Test Acc (\%)} & \textbf{Train Time (s)} & \textbf{Test Time (s)} \\ \hline
+Color Hist & 15 & 90 & 23.13 & 3.79 & 0.0711 \\ \hline
+SIFT BoVW & 15 & 90 & 47.21 & 1.87 & 0.0485 \\ \hline
+\end{tabular}
+\caption{GTSRB: Random Forest}
+\label{tab:gtsrb_rf}
+\end{table}
 
 Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the accuracy is so small, one could just choose the simplest model here.
 
@@ -507,7 +720,7 @@ Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the acc
 \centering
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
- \textbf{Dropout} & \textbf{Augment} & \textbf{Test Accuracy (\%) } & \textbf{Epochs} & \textbf{Total train time (s)} & \textbf{Total test time (s)} \\ \hline
+ \textbf{Drop} & \textbf{Aug} & \textbf{Test Acc (\%) } & \textbf{Epochs} & \textbf{Train time (s)} & \textbf{Test time (s)} \\ \hline
  0.5 & 1 & 93.48 & 15 & 631.98 & 84.83 \\ \hline
  0.2 & 1 & 93.18 & 13 & 1104.16 & 144.65 \\ \hline
  0.5 & 0 & 92.87 & 9 & 254.71 & 64.33 \\ \hline
@@ -530,7 +743,6 @@ Table~\ref{tab:gt_top3} the top 3 LeNet5 models. Here, the difference in the acc
 \label{tab:gt_top3}
 \end{table}
 
-@ahnaf top 3 table for resnet
 
 
 \section{Conclusion}
